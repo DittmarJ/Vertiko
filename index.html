@@ -3,1684 +3,384 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simpler Stundenplan</title>
-    <!-- Tailwind CSS für einfaches Styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Angebotsmanager</title>
     <style>
-        /* Grundlegende Stile für den Body */
+        :root {
+            --primary-color: #0078d7;
+            --background-color: #f5f5f5;
+            --card-color: #ffffff;
+            --text-color: #333333;
+            --border-color: #dddddd;
+        }
+        
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f0f2f5;
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            overflow-x: hidden; /* Verhindert horizontales Scrollen */
+            background-color: var(--background-color);
+            color: var(--text-color);
         }
-
-        /* --- Login-Screen Stile --- */
-        .login-screen {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #f0f2f5;
-            z-index: 1000; /* Stellt sicher, dass der Login-Screen über allem liegt */
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
         }
-
-        .login-card {
-            background-color: #ffffff;
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-            display: flex;
-            flex-direction: column;
-            gap: 20px; /* Abstand zwischen den Elementen */
-        }
-
-        .login-card h1 {
-            color: #2c3e50;
-            margin-bottom: 0; /* Kein zusätzlicher Margin */
-        }
-
-        .login-card p {
-            margin-bottom: 0; /* Kein zusätzlicher Margin */
-            color: #666;
-        }
-
-        .login-input {
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            width: 100%;
-            box-sizing: border-box; /* Padding und Border werden in die Breite einbezogen */
-        }
-
-        .login-button {
-            background-color: #007bff;
+        
+        header {
+            background-color: var(--primary-color);
             color: white;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            font-weight: 600;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            width: 100%; /* Button nimmt volle Breite ein */
-        }
-
-        .login-button:hover {
-            background-color: #0056b3;
-            transform: translateY(-2px);
-        }
-
-        .login-button:active {
-            transform: translateY(0);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-
-        /* --- Haupt-App Stile (initial ausgeblendet) --- */
-        .main-app {
-            display: none; /* Initial ausgeblendet, wird von JS angezeigt */
-            width: 100%;
-            max-width: 960px; /* Maximale Breite für den Inhalt */
-            padding-bottom: 80px; /* Platz für die Bottom-Navigation */
-        }
-
-        /* --- Top Bar Stile (simuliert Screenshot) --- */
-        .top-bar {
-            width: 100%;
-            background-color: #f0f2f5;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.9em;
-            color: #555;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-
-        .battery-icon {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        /* Überschriften */
-        h1, h2 {
-            color: #2c3e50;
-            margin-top: 20px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        /* Authentifizierungsinformationen (jetzt im Profil) */
-        .auth-info {
-            background-color: #e9e9e9;
-            padding: 20px;
-            border-radius: 12px;
-            margin-top: 20px;
-            font-size: 1em;
-            color: #555;
-            text-align: center;
-            width: 100%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            align-items: center;
-        }
-        .auth-info p {
-            margin: 0;
-            font-size: 1.1em;
-        }
-        .auth-info span {
-            font-weight: bold;
-            color: #2c3e50;
-        }
-        .auth-info button {
-             background-color: #6c757d; /* Grau für Abmelden */
-             color: white;
-             padding: 10px 20px;
-             border-radius: 8px;
-             cursor: pointer;
-             font-size: 1em;
-             transition: background-color 0.2s ease;
-             margin-top: 10px;
-        }
-        .auth-info button:hover {
-            background-color: #5a6268;
-        }
-
-        /* Bedienelemente (Formular) */
-        .controls {
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 15px 0;
             margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            margin: 0;
+            padding: 0 20px;
+        }
+        
+        .tabs {
             display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
         }
-
-        .controls label {
-            font-weight: 600;
-            color: #555;
-            flex-basis: 100%; /* Labels nehmen ganze Breite auf kleinen Bildschirmen */
-            text-align: left;
-        }
-
-        .controls select,
-        .controls input[type="text"],
-        .controls button {
-            padding: 10px 15px;
-            border: 1px solid #cceeff;
-            border-radius: 8px;
-            font-size: 1rem;
-            box-sizing: border-box;
-        }
-
-        .controls input[type="text"] {
-            flex-grow: 1;
-            min-width: 150px;
-        }
-
-        .controls select {
-            background-color: #f9f9f9;
-        }
-
-        .controls button {
-            background-color: #007bff;
-            color: white;
+        
+        .tab {
+            padding: 10px 20px;
             cursor: pointer;
-            border: none;
-            border-radius: 8px;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            font-weight: 600;
+            border: 1px solid transparent;
+            border-bottom: none;
+            margin-right: 5px;
+            background-color: var(--background-color);
+            border-radius: 5px 5px 0 0;
         }
-
-        .controls button:hover {
-            background-color: #0056b3;
-            transform: translateY(-2px);
+        
+        .tab.active {
+            background-color: var(--card-color);
+            border-color: var(--border-color);
+            border-bottom: 1px solid var(--card-color);
+            margin-bottom: -1px;
+            font-weight: bold;
         }
-
-        .controls button:active {
-            transform: translateY(0);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        
+        .tab-content {
+            display: none;
+            background-color: var(--card-color);
+            padding: 20px;
+            border-radius: 0 5px 5px 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-
-        #clearBtn {
-            background-color: #dc3545;
+        
+        .tab-content.active {
+            display: block;
         }
-
-        #clearBtn:hover {
-            background-color: #bd2130;
+        
+        .form-group {
+            margin-bottom: 15px;
         }
-
-        #resetWeekBtn { /* Neuer Button für Reset Week */
-            background-color: #ff9800; /* Orange für Reset */
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
         }
-        #resetWeekBtn:hover {
-            background-color: #fb8c00;
-        }
-
-        .controls input[type="checkbox"] {
-            margin-left: 10px;
-            width: auto;
-            transform: scale(1.2);
-        }
-        .controls input[type="checkbox"]:disabled {
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-        /* Stundenplantabelle */
-        .timetable-container {
-            overflow-x: auto;
+        
+        input[type="text"], 
+        textarea, 
+        select {
             width: 100%;
-            margin-top: 20px; /* Zusätzlicher Abstand zur Überschrift */
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
         }
-
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #005fa3;
+        }
+        
         table {
             width: 100%;
-            border-collapse: collapse; /* Essential for removing gaps between cells */
-            background-color: #ffffff;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            border-radius: 12px; /* Overall table border radius */
-            overflow: hidden; /* Ensures borders/shadows clip at rounded corners */
-            min-width: 700px;
+            border-collapse: collapse;
+            margin-bottom: 20px;
         }
-
-        table th, table td {
-            padding: 12px;
-            text-align: center;
-            white-space: normal; /* Allow content to wrap */
-            word-break: break-word; /* Break long words */
-            border: 1px solid #cceeff; /* Default border for all cells */
-            vertical-align: middle; /* Vertikal zentrieren des Inhalts */
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
         }
-
-        table th {
-            background-color: #eef7ff;
-            color: #34495e;
-            font-weight: 700;
-            white-space: nowrap; /* Header text should not wrap */
-        }
-        table th:first-child {
-             border-top-left-radius: 12px; /* Top-left for first header */
-        }
-        table th:last-child {
-             border-top-right-radius: 12px; /* Top-right for last header */
-        }
-
-
-        table td {
-            min-width: 120px;
-            height: 90px; /* Each TD has its fixed height */
-            background-color: #f8faff;
-            cursor: default;
-            transition: background-color 0.2s ease;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        
+        th {
+            background-color: var(--primary-color);
+            color: white;
             font-weight: 500;
-            font-size: 0.9em;
-            line-height: 1.3;
-            position: relative;
-            border-radius: 8px; /* Apply rounded corners to all *individual* TDs */
-
-            /* Flexbox for vertical and horizontal centering of the content inside this TD */
-            display: flex;
-            flex-direction: column;
-            justify-content: center; /* This will center content vertically within the TD's actual height */
-            align-items: center; /* This will center content horizontally within the TD */
         }
-
-        /* Remove border-radius from internal corners of the table for a cleaner grid look,
-           but keep them for the outer corners of the table overall. */
-        table tr:first-child th:first-child { border-top-left-radius: 12px; }
-        table tr:first-child th:last-child { border-top-right-radius: 12px; }
-        table tr:last-child td:first-child { border-bottom-left-radius: 12px; }
-        table tr:last-child td:last-child { border-bottom-right-radius: 12px; }
-
-
-        table td.editable { /* Cursor nur wenn bearbeitbar */
-            cursor: pointer;
+        
+        tr:hover {
+            background-color: rgba(0, 120, 215, 0.05);
         }
-        table td.editable:hover { /* Hover nur wenn bearbeitbar */
-            background-color: #e6f2ff;
-        }
-
-        table td span.hour-number { /* Stundenummer (in der ersten Spalte) */
-            font-weight: bold;
-            font-size: 1.2em;
-            display: block;
-            margin-bottom: 2px;
-            color: #2c3e50;
-        }
-        table td span.time-range { /* Uhrzeit unter Stundenummer (in der ersten Spalte) */
-            font-size: 0.8em;
-            color: #666;
-            display: block;
-        }
-        table td span.subject-abbr {
-            font-weight: bold;
-            font-size: 1.1em;
-            display: block; /* Ensures it gets its own line */
-            margin-bottom: 2px;
-        }
-        table td span.detail {
-            display: block; /* For teacher and room on separate lines */
-            font-size: 0.85em;
-            color: #555;
-        }
-
-
-        .substitution {
-            background-color: #d1b2ff; /* Helllila für Vertretungen */
-            font-weight: bold;
-            color: #6a0dad; /* Dunkleres Lila für Text */
-            position: relative;
-        }
-
-        .substitution::after {
-            content: '⚠';
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            font-size: 0.8em;
-            color: #9340FF; /* Passendes Lila für Warnsymbol */
-        }
-
-        .cancelled {
-            background-color: #e0e0e0; /* Grau für Entfall */
-            color: #888;
-            position: relative;
-        }
-        .cancelled::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            width: 100%;
-            height: 2px; /* Dicke der Linie */
-            background: red;
-            transform: translateY(-50%) rotate(-45deg); /* Vertikal zentriert, diagonal */
-            transform-origin: center;
-            z-index: 1; /* Über dem Text */
-        }
-
-
-        .teacher-unavailable {
-            background-color: #e8daef; /* Helllila für Lehrer-Abwesenheit (unterschiedlicher Ton als Vertretung) */
-            color: #7a469b;
-        }
-
-        /* Liste der aktuellen Vertretungen */
-        #substitutionsList {
-            list-style: none;
-            padding: 0;
-            width: 100%;
-            margin-top: 30px;
-        }
-
-        #substitutionsList li {
-            margin-bottom: 8px;
-            padding: 12px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        #substitutionsList li.cancelled-item {
-            background-color: #f0f0f0;
-            border-left: 6px solid #d0d0d0;
-            color: #666;
-        }
-        #substitutionsList li.substitution-item {
-            background-color: #f0e6ff; /* Sehr helles Lila für Listenelement-Hintergrund */
-            border-left: 6px solid #9340FF; /* Tieferes Lila für den Rahmen */
-            color: #6a0dad; /* Textfarbe zur Lesbarkeit */
-        }
-        #substitutionsList li.teacher-unavailable-item {
-            background-color: #f7eff9;
-            border-left: 6px solid #a366c9;
-            color: #7a469b;
-        }
-
-
-        /* Loader-Stil */
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 2s linear infinite;
+        
+        .details-panel {
+            background-color: var(--card-color);
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             margin-top: 20px;
+        }
+        
+        .details-panel h3 {
+            margin-top: 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
             display: none;
         }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        
+        .alert-success {
+            background-color: #dff0d8;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
         }
-
-        /* --- Bottom Navigation Bar Stile --- */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: #ffffff;
-            box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            z-index: 500;
-            border-top-left-radius: 15px; /* Abgerundete Ecken oben */
-            border-top-right-radius: 15px;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #888;
-            font-size: 0.7em;
-            cursor: pointer;
-            padding: 5px;
-            border-radius: 8px;
-            transition: color 0.2s ease, background-color 0.2s ease;
-        }
-
-        .nav-item i {
-            font-size: 1.4em;
-            margin-bottom: 5px;
-        }
-
-        .nav-item.active {
-            color: #007bff;
-            background-color: #eef7ff;
-        }
-
-        .nav-item:hover {
-            color: #007bff;
-            background-color: #f6faff;
-        }
-
-        /* --- View spezifische Stile --- */
-        .content-view {
-            width: 100%;
-            display: none; /* Standardmäßig ausgeblendet */
-            padding: 20px; /* Allgemeine Polsterung für Inhalt */
-            box-sizing: border-box;
-            background-color: #f0f2f5; /* Hintergrund wie Body */
-            border-radius: 12px;
-            margin-top: 20px;
-            margin-bottom: 20px;
-        }
-
-        #startView {
-            text-align: center;
-            padding: 50px 20px;
-            background-color: #ffffff;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            border-radius: 12px;
-            margin-top: 20px;
-            margin-bottom: 20px;
-            min-height: 300px; /* Mindesthöhe für bessere Darstellung */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        #startView h2 {
-            font-size: 1.8em;
-            color: #007bff;
-        }
-        #startView p {
-            font-size: 1.1em;
-            color: #666;
-        }
-
-        #timetableView {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #profileView {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        /* --- Modal Stile (für Stundenplan-Klick-Optionen) --- */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1001; /* Über allen anderen Elementen */
-            display: none; /* Standardmäßig ausgeblendet */
-        }
-
-        .modal-content {
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            max-width: 350px;
-            width: 90%;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .modal-content h3 {
-            color: #2c3e50;
-            font-size: 1.4em;
-            margin-bottom: 10px;
-        }
-
-        .modal-content button {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.2s ease, transform 0.1s ease;
-        }
-
-        .modal-content button:hover {
-            background-color: #0056b3;
-            transform: translateY(-1px);
-        }
-
-        .modal-content button:active {
-            transform: translateY(0);
-        }
-
-        .modal-content .close-button {
-            background-color: #dc3545;
-            margin-top: 10px;
-        }
-        .modal-content .close-button:hover {
-            background-color: #bd2130;
-        }
-
-        /* --- Admin Abwesenheitsmanagement --- */
-        .teacher-unavailability-controls {
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            margin-top: 30px; /* Abstand zu anderen Controls */
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-        }
-        .teacher-unavailability-controls h3 {
-            width: 100%;
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 10px;
-            font-size: 1.2em;
-            font-weight: 600;
-        }
-        .teacher-unavailability-controls .day-checkbox-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
-            width: 100%;
-            justify-content: center;
-        }
-        .teacher-unavailability-controls .day-checkbox-group label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-            font-weight: normal;
-            flex-basis: auto; /* Nicht volle Breite */
-            margin-bottom: 0;
-        }
-
-        /* Responsive Design für kleinere Bildschirme */
-        @media (max-width: 768px) {
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 10px;
-            }
-
-            .controls label,
-            .controls select,
-            .controls input[type="text"],
-            .controls button,
-            .controls input[type="checkbox"] {
-                width: 100%;
-                margin-left: 0;
-            }
-
-            .controls input[type="checkbox"] {
-                text-align: left;
-                width: auto;
-            }
-
-            .controls div {
-                display: flex;
-                align-items: center;
-                justify-content: flex-start;
-                width: 100%;
-            }
-
-            table {
-                min-width: auto;
-            }
-
-            table th, table td {
-                padding: 8px;
-            }
-
-            .teacher-unavailability-controls .day-checkbox-group label {
-                width: 45%; /* Zwei Spalten auf kleinen Bildschirmen */
-            }
+        
+        .alert-error {
+            background-color: #f2dede;
+            color: #a94442;
+            border: 1px solid #ebccd1;
         }
     </style>
-    <!-- Font Awesome für Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
-    <!-- Login Screen -->
-    <div id="loginScreen" class="login-screen">
-        <div class="login-card">
-            <h1>Willkommen!</h1>
-            <p>Bitte melden Sie sich an.</p>
-            <input type="text" id="loginUsername" class="login-input" placeholder="Benutzername">
-            <input type="password" id="loginPassword" class="login-input" placeholder="Passwort">
-            <button id="loginButton" class="login-button">Anmelden</button>
-            <div class="loader" id="loginLoader"></div>
-            <p class="mt-4 text-sm text-gray-500">
-                Hinweis: 'admin'/'admin123' für Admin-Rechte.<br>
-                'SchillerS'/'1111' für normalen Benutzer.
-            </p>
+    <header>
+        <div class="container">
+            <h1>Angebotsmanager</h1>
         </div>
-    </div>
-
-    <!-- Haupt-App (initial ausgeblendet) -->
-    <div id="mainApp" class="main-app">
-        <!-- Top Bar -->
-        <div class="top-bar">
-            <span class="time-display">17:09</span>
-            <div class="battery-icon">
-                <i class="fas fa-battery-full"></i> 92%
-            </div>
+    </header>
+    
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" onclick="openTab('new-offer')">Neues Angebot</div>
+            <div class="tab" onclick="openTab('overview')">Angebotsübersicht</div>
         </div>
-
-        <h1>Ihr Stundenplan</h1>
-
-        <!-- Start View -->
-        <div id="startView" class="content-view">
-            <h2>Willkommen in Ihrer Stundenplan-App!</h2>
-            <p>Navigieren Sie über die untere Leiste, um Ihren Stundenplan oder Ihr Profil zu sehen.</p>
-        </div>
-
-        <!-- Stundenplan View -->
-        <div id="timetableView" class="content-view">
-            <!-- Bedienelemente (Formular, nur für Admin sichtbar) -->
-            <div class="controls" id="adminControls">
-                <h2>Stunde bearbeiten/hinzufügen</h2> <!-- Adjusted title -->
-                <div>
-                    <label for="day">Tag:</label>
-                    <select id="day">
-                        <option value="Montag">Montag</option>
-                        <option value="Dienstag">Dienstag</option>
-                        <option value="Mittwoch">Mittwoch</option>
-                        <option value="Donnerstag">Donnerstag</option>
-                        <option value="Freitag">Freitag</option>
+        
+        <div id="alert-box"></div>
+        
+        <div id="new-offer" class="tab-content active">
+            <h2>Neues Angebot erstellen</h2>
+            <form id="offer-form">
+                <div class="form-group">
+                    <label for="offer-name">Angebotsname:</label>
+                    <input type="text" id="offer-name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="offer-desc">Kurze Beschreibung:</label>
+                    <input type="text" id="offer-desc" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="offer-guide">Lange Anleitung:</label>
+                    <textarea id="offer-guide" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="offer-season">Ferienauswahl:</label>
+                    <select id="offer-season" required>
+                        <option value="">-- Bitte auswählen --</option>
+                        <option value="Fasnacht">Fasnacht</option>
+                        <option value="Ostern">Ostern</option>
+                        <option value="Pfingsten">Pfingsten</option>
+                        <option value="Sommer">Sommer</option>
+                        <option value="Herbst">Herbst</option>
                     </select>
                 </div>
-                <div>
-                    <label for="timeSelect">Stunde:</label>
-                    <select id="timeSelect">
-                        <!-- Stunden 1-8 werden dynamisch mit JS hinzugefügt -->
-                    </select>
-                </div>
-                <div>
-                    <label for="subjectLabel" id="subjectLabel">Fach/Info:</label>
-                    <select id="subjectSelect">
-                        <!-- Fächer werden dynamisch mit JS hinzugefügt -->
-                    </select>
-                </div>
-                <div>
-                    <label for="teacherInput">Lehrkraft:</label>
-                    <input type="text" id="teacherInput" placeholder="z.B. Herr Müller">
-                </div>
-                <div>
-                    <label for="roomInput">Raum:</label>
-                    <input type="text" id="roomInput" placeholder="z.B. A101">
-                </div>
-                <div style="display: flex; align-items: center;">
-                    <label for="isSubstitute" style="flex-basis: auto;">Vertretung:</label>
-                    <input type="checkbox" id="isSubstitute">
-                </div>
-
-                <button id="addOrUpdateBtn">Stunde hinzufügen/aktualisieren</button>
-                <button id="clearBtn">Stundenplan löschen</button>
-                <button id="resetWeekBtn">Woche zurücksetzen</button> <!-- NEU: Reset Week Button -->
-            </div>
-
-            <!-- Admin Abwesenheitsmanagement -->
-            <div class="teacher-unavailability-controls" id="teacherUnavailabilityControls">
-                <h3>Lehrkraft als abwesend markieren</h3>
-                <div>
-                    <label for="unavailableTeacherInput">Lehrkraft:</label>
-                    <input type="text" id="unavailableTeacherInput" placeholder="Name der Lehrkraft">
-                </div>
-                <div class="day-checkbox-group">
-                    <label><input type="checkbox" name="unavailableDay" value="Montag"> Montag</label>
-                    <label><input type="checkbox" name="unavailableDay" value="Dienstag"> Dienstag</label>
-                    <label><input type="checkbox" name="unavailableDay" value="Mittwoch"> Mittwoch</label>
-                    <label><input type="checkbox" name="unavailableDay" value="Donnerstag"> Donnerstag</label>
-                    <label><input type="checkbox" name="unavailableDay" value="Freitag"> Freitag</label>
-                </div>
-                <button id="markTeacherUnavailableBtn">Markieren</button>
-                <button id="clearUnavailableBtn">Abwesenheiten löschen</button>
-                <div id="currentUnavailableTeachers" style="width: 100%; text-align: center; margin-top: 10px; font-size: 0.9em; color: #666;">
-                    Aktuell abwesende Lehrkräfte: Keine
-                </div>
-            </div>
-
-
-            <div class="timetable-container">
-                <table id="timetable">
-                    <thead>
-                        <tr>
-                            <th>Stunde / Zeit</th>
-                            <th>Montag</th>
-                            <th>Dienstag</th>
-                            <th>Mittwoch</th>
-                            <th>Donnerstag</th>
-                            <th>Freitag</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Stundenplanzellen werden mit JS gefüllt -->
-                    </tbody>
-                </table>
-            </div>
-
-            <h2>Aktuelle Vertretungen und Entfälle</h2>
-            <ul id="substitutionsList">
-                <!-- Vertretungen und Entfälle werden hier angezeigt -->
-            </ul>
+                
+                <button type="submit">Angebot speichern</button>
+            </form>
         </div>
-
-        <!-- Profil View -->
-        <div id="profileView" class="content-view">
-            <h2>Ihr Profil</h2>
-            <div class="auth-info">
-                <p>Angemeldet als: <span id="currentLoggedInUser">Nicht angemeldet</span></p>
-                <p>Ihre Rolle: <span id="userRoleDisplay">Normaler Benutzer</span></p>
-                <button id="authButton">Abmelden</button>
+        
+        <div id="overview" class="tab-content">
+            <h2>Angebotsübersicht</h2>
+            
+            <table id="offers-table">
+                <thead>
+                    <tr>
+                        <th>Angebotsname</th>
+                        <th>Beschreibung</th>
+                        <th>Ferien</th>
+                        <th>Erstellt am</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Angebote werden hier eingefügt -->
+                </tbody>
+            </table>
+            
+            <div class="details-panel">
+                <h3>Anleitungsdetails</h3>
+                <div id="offer-details"></div>
             </div>
-        </div>
-
-    </div>
-
-    <!-- Bottom Navigation Bar -->
-    <div class="bottom-nav">
-        <div class="nav-item active" data-view="startView">
-            <i class="fas fa-home"></i> Start
-        </div>
-        <div class="nav-item" data-view="timetableView">
-            <i class="fas fa-calendar-alt"></i> Stundenplan
-        </div>
-        <div class="nav-item" data-view="profileView">
-            <i class="fas fa-user"></i> Profil
         </div>
     </div>
-
-    <!-- Modal für Stundenplan-Klick-Optionen -->
-    <div id="lessonOptionsModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3 id="modalLessonInfo">Stunde: Montag, 1. (13:40-14:10)</h3>
-            <button id="editLessonBtn">Stunde bearbeiten</button>
-            <button id="cancelLessonBtn">Stunde entfallen lassen</button>
-            <button id="assignSubstituteBtn">Vertretung zuweisen</button>
-            <button class="close-button" id="closeModalBtn">Schließen</button>
-        </div>
-    </div>
-
-    <!-- NEU: Modal für Vertretung zuweisen -->
-    <div id="assignSubstituteModal" class="modal-overlay">
-        <div class="modal-content">
-            <h3>Vertretung für <span id="modalSubstituteLessonInfo"></span></h3>
-            <div>
-                <label for="substituteSubjectSelect">Fach:</label>
-                <select id="substituteSubjectSelect">
-                    <!-- Fächer werden dynamisch mit JS hinzugefügt -->
-                </select>
-            </div>
-            <div>
-                <label for="substituteTeacherInput">Lehrkraft:</label>
-                <input type="text" id="substituteTeacherInput" placeholder="Lehrkraft">
-            </div>
-            <div>
-                <label for="substituteRoomInput">Raum:</label>
-                <input type="text" id="substituteRoomInput" placeholder="Raum">
-            </div>
-            <div style="display: flex; align-items: center; justify-content: center;">
-                <label for="substituteIsSubstitute" style="flex-basis: auto;">Vertretung:</label>
-                <input type="checkbox" id="substituteIsSubstitute" checked disabled>
-            </div>
-            <button id="saveSubstituteBtn">Vertretung speichern</button>
-            <button class="close-button" id="closeSubstituteModalBtn">Abbrechen</button>
-        </div>
-    </div>
-
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Definiert die Wochentage
-            const days = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag"];
-            // Generiert die Liste der Uhrzeiten (feste Stundenblöcke)
-            const hoursAndTimes = generateHoursAndTimes(); // Stunden (1-8) und Uhrzeiten
-            // Schlüssel für die Speicherung im localStorage des Browsers
-            const timetableDataKey = 'simpleTimetableData';
-            const currentUserKey = 'currentUser'; // Schlüssel für den aktuell angemeldeten Benutzer
-            const teacherUnavailabilityKey = 'teacherUnavailabilityData'; // Schlüssel für Lehrer-Abwesenheiten
-
-            // Vordefinierte Fächer mit Abkürzungen
-            const subjects = [
-                { name: "Deutsch", abbr: "D" },
-                { name: "Mathe", abbr: "M" },
-                { name: "Mathe-Vertretung", abbr: "M-V" },
-                { name: "Deutsch-Vertretung", abbr: "D-V" },
-                { name: "Erdkunde", abbr: "EK" },
-                { name: "Französisch", abbr: "F" },
-                { name: "Bewegung, Sport und Spiele", abbr: "BSS" },
-                { name: "Musik", abbr: "Mu" },
-                { name: "Geschichte", abbr: "G" },
-                { name: "Biologie, Naturphänomene und Technik", abbr: "BNT" },
-                { name: "Bildende Kunst", abbr: "BK" },
-                { name: "evangelische Religion", abbr: "evR" },
-                { name: "katholische Religion", abbr: "rkR" },
-                { name: "Ethik", abbr: "Eth" },
-                { name: "Aufsicht", abbr: "Aufs." },
-                { name: "Aufgaben", abbr: "Aufg." }
-            ];
-
-            // DOM-Elemente des Login-Screens
-            const loginScreen = document.getElementById('loginScreen');
-            const loginUsernameInput = document.getElementById('loginUsername');
-            const loginPasswordInput = document.getElementById('loginPassword');
-            const loginButton = document.getElementById('loginButton');
-            const loginLoader = document.getElementById('loginLoader');
-
-            // DOM-Elemente der Haupt-App (Views)
-            const mainApp = document.getElementById('mainApp');
-            const startView = document.getElementById('startView');
-            const timetableView = document.getElementById('timetableView');
-            const profileView = document.getElementById('profileView');
-
-            // DOM-Elemente für Profil/Auth-Info
-            const currentLoggedInUserSpan = document.getElementById('currentLoggedInUser');
-            const userRoleDisplay = document.getElementById('userRoleDisplay');
-            const authButton = document.getElementById('authButton');
-
-            // DOM-Elemente für Stundenplan-Bearbeitung (Admin Controls)
-            const adminControlsDiv = document.getElementById('adminControls');
-            const subjectLabel = document.getElementById('subjectLabel');
-            const daySelect = document.getElementById('day');
-            const timeSelect = document.getElementById('timeSelect');
-            const subjectSelect = document.getElementById('subjectSelect');
-            const teacherInput = document.getElementById('teacherInput');
-            const roomInput = document.getElementById('roomInput');
-            const isSubstituteCheckbox = document.getElementById('isSubstitute');
-            const addOrUpdateBtn = document.getElementById('addOrUpdateBtn');
-            const clearBtn = document.getElementById('clearBtn');
-            const resetWeekBtn = document.getElementById('resetWeekBtn'); // Reset Week Button
-            const timetableTableBody = document.querySelector('#timetable tbody'); // Wieder vorhanden
-            const substitutionsList = document.getElementById('substitutionsList');
-
-            // DOM-Elemente für Lehrer-Abwesenheitsmanagement
-            const teacherUnavailabilityControls = document.getElementById('teacherUnavailabilityControls');
-            const unavailableTeacherInput = document.getElementById('unavailableTeacherInput');
-            const unavailableDayCheckboxes = document.querySelectorAll('input[name="unavailableDay"]');
-            const markTeacherUnavailableBtn = document.getElementById('markTeacherUnavailableBtn');
-            const clearUnavailableBtn = document.getElementById('clearUnavailableBtn');
-            const currentUnavailableTeachersDiv = document.getElementById('currentUnavailableTeachers');
-
-
-            // Bottom Navigation Elemente
-            const navItems = document.querySelectorAll('.bottom-nav .nav-item');
-
-            // Modal-Elemente für Stundenplan-Klick-Optionen
-            const lessonOptionsModal = document.getElementById('lessonOptionsModal');
-            const modalLessonInfo = document.getElementById('modalLessonInfo');
-            const editLessonBtn = document.getElementById('editLessonBtn');
-            const cancelLessonBtn = document.getElementById('cancelLessonBtn');
-            const assignSubstituteBtn = document.getElementById('assignSubstituteBtn');
-            const closeModalBtn = document.getElementById('closeModalBtn');
-
-            // NEU: Modal-Elemente für Vertretung zuweisen
-            const assignSubstituteModal = document.getElementById('assignSubstituteModal');
-            const modalSubstituteLessonInfo = document.getElementById('modalSubstituteLessonInfo');
-            const substituteSubjectSelect = document.getElementById('substituteSubjectSelect');
-            const substituteTeacherInput = document.getElementById('substituteTeacherInput');
-            const substituteRoomInput = document.getElementById('substituteRoomInput');
-            const substituteIsSubstituteCheckbox = document.getElementById('substituteIsSubstitute'); // Always checked/disabled
-            const saveSubstituteBtn = document.getElementById('saveSubstituteBtn');
-            const closeSubstituteModalBtn = document.getElementById('closeSubstituteModalBtn');
-
-            // Aktuell geklickte Zelle für Modal-Kontext
-            let currentClickedCellData = { day: null, hourNumber: null, timeRange: null };
-
-            let timetable = loadTimetable(); // Stundenplan-Daten
-            let currentUser = null; // Aktuell angemeldeter Benutzer (Objekt: {username, role})
-            let isAdminEditingBaseTimetable = true; // Flag: true für Basis-Bearbeitung (im Hauptformular)
-            let teacherUnavailability = loadTeacherUnavailability(); // Lehrer-Abwesenheiten
-
-            // Hardcoded Benutzerdaten
-            const users = [
-                { username: 'admin', password: 'admin123', role: 'admin' },
-                { username: 'SchillerS', password: '1111', role: 'user' }
-            ];
-
-            // Zeigt den Ladeindikator an
-            function showLoader(targetLoader) {
-                targetLoader.style.display = 'block';
+        // Angebote-Array (simuliert eine Datenbank)
+        let offers = [
+            {
+                name: "Osterbasteln",
+                description: "Bastelideen für Ostern",
+                guide: "1. Materialien besorgen\n2. Vorlagen ausschneiden\n3. Zusammenbauen\n4. Dekorieren",
+                season: "Ostern",
+                createdAt: new Date().toLocaleString()
+            },
+            {
+                name: "Sommercamp",
+                description: "Aktivitäten für Sommerferien",
+                guide: "Tagesplan:\n- 09:00 Frühstück\n- 10:00 Wanderung\n- 12:00 Mittagessen\n- 14:00 Bastelzeit\n- 16:00 Freizeit",
+                season: "Sommer",
+                createdAt: new Date().toLocaleString()
             }
+        ];
 
-            // Blendet den Ladeindikator aus
-            function hideLoader(targetLoader) {
-                targetLoader.style.display = 'none';
+        // Tab-Funktionalität
+        function openTab(tabId) {
+            // Tab-Buttons
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            event.currentTarget.classList.add('active');
+            
+            // Tab-Inhalte
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Formularverarbeitung
+        document.getElementById('offer-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('offer-name').value.trim();
+            const description = document.getElementById('offer-desc').value.trim();
+            const guide = document.getElementById('offer-guide').value.trim();
+            const season = document.getElementById('offer-season').value;
+            
+            // Validierung
+            if (!name || !description || !guide || !season) {
+                showAlert('Bitte füllen Sie alle Felder aus!', 'error');
+                return;
             }
+            
+            // Neues Angebot erstellen
+            const newOffer = {
+                name,
+                description,
+                guide,
+                season,
+                createdAt: new Date().toLocaleString()
+            };
+            
+            // Zum Array hinzufügen
+            offers.push(newOffer);
+            
+            // Formular zurücksetzen
+            this.reset();
+            
+            // Erfolgsmeldung anzeigen
+            showAlert('Angebot wurde erfolgreich gespeichert!', 'success');
+            
+            // Übersicht aktualisieren
+            updateOverview();
+            
+            // Zur Übersicht wechseln
+            document.querySelector('.tab:nth-child(2)').click();
+        });
 
-            /**
-             * Authentifiziert einen Benutzer.
-             * @param {string} username Der eingegebene Benutzername.
-             * @param {string} password Das eingegebene Passwort.
-             * @returns {object|null} Das Benutzerobjekt bei Erfolg, sonst null.
-             */
-            function authenticateUser(username, password) {
-                return users.find(user => user.username === username && user.password === password);
-            }
-
-            /**
-             * Behandelt den Anmeldevorgang.
-             */
-            function handleLogin() {
-                const username = loginUsernameInput.value.trim();
-                const password = loginPasswordInput.value.trim();
-
-                showLoader(loginLoader);
-
-                setTimeout(() => { // Simulierte Ladezeit
-                    const authenticatedUser = authenticateUser(username, password);
-                    if (authenticatedUser) {
-                        currentUser = authenticatedUser;
-                        localStorage.setItem(currentUserKey, JSON.stringify(currentUser)); // Benutzerstatus speichern
-                        updateUIBasedOnLoginStatus();
-                        loginUsernameInput.value = ''; // Felder leeren
-                        loginPasswordInput.value = '';
-                        showView('startView'); // Nach Login zur Startansicht wechseln
-                    } else {
-                        alert('Benutzername oder Passwort falsch.');
-                        currentUser = null;
-                        localStorage.removeItem(currentUserKey);
-                    }
-                    hideLoader(loginLoader);
-                }, 500); // Kurze Verzögerung zur Simulation des Logins
-            }
-
-            /**
-             * Behandelt den Abmeldevorgang.
-             */
-            function handleLogout() {
-                currentUser = null;
-                localStorage.removeItem(currentUserKey); // Status aus localStorage entfernen
-                updateUIBasedOnLoginStatus();
-            }
-
-            /**
-             * Aktualisiert die Benutzeroberfläche basierend auf dem Anmeldestatus.
-             */
-            function updateUIBasedOnLoginStatus() {
-                if (currentUser) {
-                    loginScreen.style.display = 'none';
-                    mainApp.style.display = 'block';
-                    currentLoggedInUserSpan.textContent = currentUser.username;
-                    userRoleDisplay.textContent = currentUser.role === 'admin' ? 'Admin' : 'Normaler Benutzer';
-                    authButton.textContent = 'Abmelden';
-                    authButton.onclick = handleLogout;
-
-                    // Admin-Controls nur für Admins anzeigen
-                    if (currentUser.role === 'admin') {
-                        adminControlsDiv.style.display = 'flex';
-                        teacherUnavailabilityControls.style.display = 'flex';
-                        isAdminEditingBaseTimetable = true; // Standardmodus: Basis-Stundenplan bearbeiten
-                        updateAdminControlsVisibility(); // Passt Fachlabel und Checkbox an
-                        updateTeacherUnavailabilityDisplay(); // Abwesenheiten anzeigen
-                    } else {
-                        adminControlsDiv.style.display = 'none';
-                        teacherUnavailabilityControls.style.display = 'none';
-                    }
-
-                } else {
-                    loginScreen.style.display = 'flex';
-                    mainApp.style.display = 'none';
-                    currentLoggedInUserSpan.textContent = 'Nicht angemeldet';
-                    userRoleDisplay.textContent = 'Normaler Benutzer';
-                    authButton.textContent = 'Anmelden';
-                    authButton.onclick = handleLogin;
-                    adminControlsDiv.style.display = 'none';
-                    teacherUnavailabilityControls.style.display = 'none';
-
-                    loginUsernameInput.value = '';
-                    loginPasswordInput.value = '';
-                }
-                renderTimetable(); // Stundenplan neu rendern (jetzt wieder mit Tabelle)
-            }
-
-            /**
-             * Aktualisiert die Sichtbarkeit und den Zustand der Admin-Steuerelemente
-             * basierend auf dem isAdminEditingBaseTimetable Flag.
-             * (Jetzt nur noch für das Hauptformular relevant)
-             */
-            function updateAdminControlsVisibility() {
-                if (currentUser && currentUser.role === 'admin') {
-                    if (isAdminEditingBaseTimetable) { // Basis-Stundenplan bearbeiten
-                        isSubstituteCheckbox.disabled = false;
-                        isSubstituteCheckbox.checked = false; // Zurücksetzen für Basis-Modus
-                        subjectLabel.textContent = 'Fach/Info:';
-                    } else { // Dieser Modus wird jetzt durch den Modal für Vertretung abgedeckt
-                        // Dies sollte im Hauptformular nicht mehr aktiv sein
-                        // Bleibt hier für Konsistenz, aber im UI nicht direkt über Radio-Buttons gesteuert
-                        isSubstituteCheckbox.disabled = true;
-                        isSubstituteCheckbox.checked = true; // Automatisch aktiviert für Vertretung
-                        subjectLabel.textContent = 'Vertretungsfach:';
-                    }
-                }
-            }
-
-
-            /**
-             * Zeigt die angegebene Ansicht an und blendet andere aus.
-             * @param {string} viewId Die ID der Ansicht, die angezeigt werden soll (z.B. 'startView').
-             */
-            function showView(viewId) {
-                const views = [startView, timetableView, profileView];
-                views.forEach(view => {
-                    view.style.display = 'none';
-                });
-                document.getElementById(viewId).style.display = 'block';
-
-                navItems.forEach(item => {
-                    item.classList.remove('active');
-                });
-                document.querySelector(`.nav-item[data-view="${viewId}"]`).classList.add('active');
-
-                if (viewId === 'timetableView') {
-                    renderTimetable(); // Stundenplan (jetzt wieder Tabelle + Liste) neu rendern
-                }
-            }
-
-            /**
-             * Füllt das Stunden-Dropdown-Menü mit Stunden (1-8).
-             */
-            function populateTimeSelect() {
-                timeSelect.innerHTML = '';
-                hoursAndTimes.forEach(entry => {
-                    const option = document.createElement('option');
-                    option.value = entry.hour;
-                    option.textContent = `${entry.hour}. Stunde (${entry.range})`;
-                    timeSelect.appendChild(option);
-                });
-            }
-
-            /**
-             * Füllt die Fächer-Dropdown-Menüs mit vordefinierten Fächern.
-             */
-            function populateSubjectSelects() {
-                // Hauptformular
-                subjectSelect.innerHTML = '';
-                // NEU: Vertretungsmodal
-                substituteSubjectSelect.innerHTML = '';
-
-                subjects.forEach(subject => {
-                    const optionMain = document.createElement('option');
-                    optionMain.value = subject.abbr;
-                    optionMain.textContent = `${subject.name} (${subject.abbr})`;
-                    subjectSelect.appendChild(optionMain);
-
-                    const optionSub = document.createElement('option');
-                    optionSub.value = subject.abbr;
-                    optionSub.textContent = `${subject.name} (${subject.abbr})`;
-                    substituteSubjectSelect.appendChild(optionSub);
-                });
-            }
-
-            /**
-             * Generiert eine Liste von Stunden (1-8) und deren festen Uhrzeiten.
-             * @returns {object[]} Ein Array von Objekten mit hour (Nummer) und range (Uhrzeit-String).
-             */
-            function generateHoursAndTimes() {
-                const fixedTimes = [
-                    "13:40-14:10", "14:15-14:45", "15:05-15:35", "15:40-16:10",
-                    "16:25-16:55", "17:00-17:30", "17:40-18:10", "18:15-18:45"
-                ];
-                return fixedTimes.map((range, index) => ({
-                    hour: index + 1,
-                    range: range
-                }));
-            }
-
-            /**
-             * Speichert den aktuellen Stundenplan im localStorage des Browsers.
-             */
-            function saveTimetable() {
-                try {
-                    localStorage.setItem(timetableDataKey, JSON.stringify(timetable));
-                } catch (e) {
-                    console.error("Fehler beim Speichern des Stundenplans im localStorage:", e);
-                }
-            }
-
-            /**
-             * Lädt den Stundenplan aus dem localStorage des Browsers.
-             * @returns {object} Das geladene Stundenplan-Objekt oder ein leeres Objekt.
-             */
-            function loadTimetable() {
-                try {
-                    const storedData = localStorage.getItem(timetableDataKey);
-                    return storedData ? JSON.parse(storedData) : {};
-                } catch (e) {
-                    console.error("Fehler beim Laden des Stundenplans aus localStorage:", e);
-                    return {};
-                }
-            }
-
-            /**
-             * Speichert die Lehrer-Abwesenheitsdaten im localStorage.
-             */
-            function saveTeacherUnavailability() {
-                try {
-                    localStorage.setItem(teacherUnavailabilityKey, JSON.stringify(teacherUnavailability));
-                    updateTeacherUnavailabilityDisplay();
-                    renderTimetable(); // Stundenplan (jetzt wieder Tabelle + Liste) neu rendern
-                } catch (e) {
-                    console.error("Fehler beim Speichern der Lehrer-Abwesenheit im localStorage:", e);
-                }
-            }
-
-            /**
-             * Lädt die Lehrer-Abwesenheitsdaten aus dem localStorage.
-             * @returns {object} Das geladene Objekt oder ein leeres Objekt.
-             */
-            function loadTeacherUnavailability() {
-                try {
-                    const storedData = localStorage.getItem(teacherUnavailabilityKey);
-                    return storedData ? JSON.parse(storedData) : {};
-                } catch (e) {
-                    console.error("Fehler beim Laden der Lehrer-Abwesenheit aus localStorage:", e);
-                    return {};
-                }
-            }
-
-            /**
-             * Aktualisiert die Anzeige der aktuell abwesenden Lehrer.
-             */
-            function updateTeacherUnavailabilityDisplay() {
-                let displayHtml = '';
-                const unavailableTeachersList = Object.keys(teacherUnavailability);
-                if (unavailableTeachersList.length === 0) {
-                    displayHtml = 'Aktuell abwesende Lehrkräfte: Keine';
-                } else {
-                    displayHtml = 'Aktuell abwesende Lehrkräfte:<br>';
-                    unavailableTeachersList.forEach(teacherName => {
-                        const days = teacherUnavailability[teacherName].join(', ');
-                        displayHtml += `- ${teacherName} (${days})<br>`;
-                    });
-                }
-                currentUnavailableTeachersDiv.innerHTML = displayHtml;
-            }
-
-            /**
-             * Rendert (zeichnet) den gesamten Stundenplan und die Vertretungsliste neu
-             * basierend auf dem `timetable`-Objekt und Lehrer-Abwesenheiten.
-             */
-            function renderTimetable() {
-                timetableTableBody.innerHTML = ''; // Leert den Tabellenkörper
-                substitutionsList.innerHTML = ''; // Leert die Vertretungsliste
-
-                hoursAndTimes.forEach((hourEntry) => {
-                    const row = document.createElement('tr');
-                    const timeCell = document.createElement('td'); // Die erste Zelle jeder Zeile für Stunde/Zeit
-                    timeCell.innerHTML = `<span class="hour-number">${hourEntry.hour}.</span><span class="time-range">${hourEntry.range}</span>`;
-                    row.appendChild(timeCell);
-
-                    days.forEach((day) => {
-                        const cell = document.createElement('td');
-                        const lesson = timetable[day] && timetable[day][hourEntry.hour];
-
-                        // Inhalt wird immer in der Zelle platziert (keine rowspan-Logik hier)
-                        if (lesson) {
-                            let cellContent = `<span class="subject-abbr">${lesson.abbr || ''}</span>`;
-                            if (lesson.teacher) {
-                                cellContent += `<span class="detail">${lesson.teacher}</span>`;
-                            }
-                            if (lesson.room) {
-                                cellContent += `<span class="detail">${lesson.room}</span>`;
-                            }
-                            cell.innerHTML = cellContent;
-                        } else {
-                            cell.innerHTML = ''; // Bleibt leer, wenn keine Stunde vorhanden
-                        }
-
-                        // Anwenden von Styling-Klassen basierend auf dem Stundenstatus
-                        if (lesson) {
-                            if (lesson.isCancelled) {
-                                cell.classList.add('cancelled');
-                                const fullSubjectName = subjects.find(s => s.abbr === lesson.abbr)?.name || lesson.abbr;
-                                const listItem = document.createElement('li');
-                                let listItemText = `${day}, ${hourEntry.hour}. (${hourEntry.range}): ${fullSubjectName} (${lesson.abbr})`;
-                                if (lesson.teacher) listItemText += `, L: ${lesson.teacher}`;
-                                if (lesson.room) listItemText += `, R: ${lesson.room}`;
-                                listItemText += ` (Entfall)`;
-                                listItem.classList.add('cancelled-item');
-                                substitutionsList.appendChild(listItem);
-                            } else if (lesson.isSubstitute) {
-                                cell.classList.add('substitution');
-                                const fullSubjectName = subjects.find(s => s.abbr === lesson.abbr)?.name || lesson.abbr;
-                                const listItem = document.createElement('li');
-                                let listItemText = `${day}, ${hourEntry.hour}. (${hourEntry.range}): ${fullSubjectName} (${lesson.abbr})`;
-                                if (lesson.teacher) listItemText += `, L: ${lesson.teacher}`;
-                                if (lesson.room) listItemText += `, R: ${lesson.room}`;
-                                listItemText += ` (Vertretung)`;
-                                listItem.classList.add('substitution-item');
-                                substitutionsList.appendChild(listItem);
-                            }
-                        }
-
-                        // Styling für Lehrer-Abwesenheit (wird angewendet, wenn nicht entfallen/Vertretung)
-                        if (lesson && lesson.teacher && teacherUnavailability[lesson.teacher] && teacherUnavailability[lesson.teacher].includes(day)) {
-                            if (!lesson.isCancelled && !lesson.isSubstitute) {
-                                cell.classList.add('teacher-unavailable');
-                                const listItem = document.createElement('li');
-                                let listItemText = `${day}, ${hourEntry.hour}. (${hourEntry.range}): ${lesson.teacher} (Abwesend)`;
-                                listItem.classList.add('teacher-unavailable-item');
-                                substitutionsList.appendChild(listItem);
-                            }
-                        }
-
-                        // Füge die Klasse 'editable' und den Event Listener für Admins hinzu
-                        if (currentUser && currentUser.role === 'admin') {
-                            cell.dataset.day = day;
-                            cell.dataset.hour = hourEntry.hour;
-                            cell.dataset.timeRange = hourEntry.range;
-                            cell.addEventListener('click', openLessonOptionsModal);
-                            cell.classList.add('editable');
-                        } else {
-                            cell.removeEventListener('click', openLessonOptionsModal); // Ensure listener is removed if not admin
-                            cell.classList.remove('editable');
-                        }
-                        row.appendChild(cell); // Füge das erstellte <td> zur aktuellen Zeile hinzu
-                    });
-                    timetableTableBody.appendChild(row); // Füge die fertige Zeile zum Tabellenkörper hinzu
-                });
-            }
-
-
-            /**
-             * Öffnet das Modal mit Optionen für eine angeklickte Stunde.
-             * @param {Event} event Das Klick-Ereignis.
-             */
-            function openLessonOptionsModal(event) {
-                if (!currentUser || currentUser.role !== 'admin') return;
-
-                const clickedCell = event.target.closest('td');
-                if (!clickedCell) return;
-
-                const day = clickedCell.dataset.day;
-                const hourNumber = parseInt(clickedCell.dataset.hour);
-                const timeRange = clickedCell.dataset.timeRange;
-
-                currentClickedCellData = { day, hourNumber, timeRange };
-                modalLessonInfo.textContent = `Stunde: ${day}, ${hourNumber}. (${timeRange})`;
-                lessonOptionsModal.style.display = 'flex';
-            }
-
-            /**
-             * Schließt das Stunden-Optionen-Modal.
-             */
-            function closeLessonOptionsModal() {
-                lessonOptionsModal.style.display = 'none';
-            }
-
-            /**
-             * Behandelt Klicks auf Stundenplan-Zellen, um deren Inhalt
-             * in die Eingabefelder zu laden (für 'Stunde bearbeiten').
-             */
-            function handleCellEditLoad() {
-                const { day, hourNumber } = currentClickedCellData;
-                if (!day || !hourNumber) return;
-
-                daySelect.value = day;
-                timeSelect.value = hourNumber;
-                const lesson = timetable[day] && timetable[day][hourNumber];
-                if (lesson) {
-                    subjectSelect.value = lesson.abbr || subjects[0].abbr;
-                    teacherInput.value = lesson.teacher || '';
-                    roomInput.value = lesson.room || '';
-                    isSubstituteCheckbox.checked = lesson.isSubstitute || false;
-                } else {
-                    // Wenn keine Stunde in der Zelle ist, Felder leeren
-                    subjectSelect.value = subjects[0].abbr;
-                    teacherInput.value = '';
-                    roomInput.value = '';
-                    isSubstituteCheckbox.checked = false;
-                }
-                isAdminEditingBaseTimetable = true; // Setzt den Bearbeitungsmodus auf "Basis"
-                updateAdminControlsVisibility();
-                closeLessonOptionsModal();
-            }
-
-            /**
-             * Markiert eine Stunde als entfallen.
-             */
-            function handleCancelLesson() {
-                const { day, hourNumber } = currentClickedCellData;
-                if (!day || !hourNumber) return;
-
-                if (!timetable[day]) {
-                    timetable[day] = {};
-                }
-                // Wenn die Stunde schon existiert, aktualisiere sie, sonst erstelle ein minimales Objekt
-                if (timetable[day][hourNumber]) {
-                    timetable[day][hourNumber].isCancelled = true;
-                    timetable[day][hourNumber].isSubstitute = false; // Kann nicht Vertretung UND entfallen sein
-                    timetable[day][hourNumber].teacher = ''; // Lehrer und Raum löschen bei Entfall
-                    timetable[day][hourNumber].room = '';
-                } else {
-                    timetable[day][hourNumber] = {
-                        abbr: 'Entf.', // Abkürzung für Entfall
-                        isCancelled: true,
-                        isSubstitute: false,
-                        teacher: '',
-                        room: ''
-                    };
-                }
-                saveTimetable();
-                renderTimetable();
-                closeLessonOptionsModal();
-            }
-
-            /**
-             * Öffnet das Modal für die Vertretungszuweisung.
-             */
-            function handleAssignSubstitute() {
-                const { day, hourNumber, timeRange } = currentClickedCellData;
-                if (!day || !hourNumber) return;
-
-                // Setze die Informationen im Vertretungs-Modal
-                modalSubstituteLessonInfo.textContent = `${day}, ${hourNumber}. (${timeRange})`;
+        // Übersicht aktualisieren
+        function updateOverview() {
+            const tbody = document.querySelector('#offers-table tbody');
+            tbody.innerHTML = '';
+            
+            // Angebote sortieren (neueste zuerst)
+            const sortedOffers = [...offers].sort((a, b) => 
+                new Date(b.createdAt) - new Date(a.createdAt));
+            
+            // Angebote zur Tabelle hinzufügen
+            sortedOffers.forEach(offer => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${offer.name}</td>
+                    <td>${offer.description}</td>
+                    <td>${offer.season}</td>
+                    <td>${offer.createdAt}</td>
+                `;
                 
-                // Lade die aktuelle Stundeninfo in die Eingabefelder des Modals
-                const lesson = timetable[day] && timetable[day][hourNumber];
-                if (lesson) {
-                    substituteSubjectSelect.value = lesson.abbr || subjects[0].abbr;
-                    substituteTeacherInput.value = lesson.teacher || '';
-                    substituteRoomInput.value = lesson.room || '';
-                } else {
-                    // Wenn keine Stunde vorhanden, Standardwerte setzen
-                    substituteSubjectSelect.value = subjects[0].abbr;
-                    substituteTeacherInput.value = '';
-                    substituteRoomInput.value = '';
-                }
-                // isSubstituteCheckbox ist im Modal immer auf checked und disabled
+                // Klick-Event für Zeile
+                row.addEventListener('click', () => showOfferDetails(offer));
+                
+                tbody.appendChild(row);
+            });
+        }
 
-                lessonOptionsModal.style.display = 'none'; // Schließe das erste Modal
-                assignSubstituteModal.style.display = 'flex'; // Öffne das Vertretungs-Modal
+        // Angebotsdetails anzeigen
+        function showOfferDetails(offer) {
+            const detailsDiv = document.getElementById('offer-details');
+            detailsDiv.innerHTML = `
+                <h4>${offer.name}</h4>
+                <p><strong>Ferien:</strong> ${offer.season}</p>
+                <p><strong>Erstellt am:</strong> ${offer.createdAt}</p>
+                <h5>Anleitung:</h5>
+                <pre>${offer.guide}</pre>
+            `;
+        }
+
+        // Alert anzeigen
+        function showAlert(message, type) {
+            const alertBox = document.getElementById('alert-box');
+            alertBox.innerHTML = `
+                <div class="alert alert-${type}">${message}</div>
+            `;
+            
+            alertBox.style.display = 'block';
+            
+            // Nach 5 Sekenden ausblenden
+            setTimeout(() => {
+                alertBox.style.display = 'none';
+            }, 5000);
+        }
+
+        // Initialisierung
+        document.addEventListener('DOMContentLoaded', function() {
+            updateOverview();
+            
+            // Beim Start erstes Angebot anzeigen (falls vorhanden)
+            if (offers.length > 0) {
+                showOfferDetails(offers[0]);
             }
-
-            /**
-             * Speichert die Vertretungsstunde aus dem Modal.
-             */
-            saveSubstituteBtn.addEventListener('click', () => {
-                const { day, hourNumber } = currentClickedCellData;
-                if (!day || !hourNumber) {
-                    alert('Fehler: Keine Stunde zum Speichern der Vertretung ausgewählt.');
-                    return;
-                }
-
-                const selectedAbbr = substituteSubjectSelect.value;
-                const teacher = substituteTeacherInput.value.trim();
-                const room = substituteRoomInput.value.trim();
-                const isSubstitute = true; // Im Vertretungsmodal immer true
-                const isCancelled = false; // Vertretung kann nicht entfallen sein
-
-                if (!selectedAbbr) {
-                    alert('Bitte Fach für die Vertretung auswählen.');
-                    return;
-                }
-
-                if (!timetable[day]) {
-                    timetable[day] = {};
-                }
-                timetable[day][hourNumber] = {
-                    abbr: selectedAbbr,
-                    teacher: teacher,
-                    room: room,
-                    isSubstitute: isSubstitute,
-                    isCancelled: isCancelled
-                };
-
-                saveTimetable();
-                renderTimetable();
-                assignSubstituteModal.style.display = 'none'; // Schließe Vertretungs-Modal
-                alert('Vertretung erfolgreich gespeichert!');
-            });
-
-
-            /**
-             * Event Listener für den "Stunde hinzufügen/aktualisieren"-Button.
-             * Fügt eine neue Stunde hinzu oder aktualisiert eine bestehende (nur für Admin).
-             */
-            addOrUpdateBtn.addEventListener('click', () => {
-                if (!currentUser || currentUser.role !== 'admin') {
-                    alert("Keine Berechtigung zum Hinzufügen/Aktualisieren von Stunden.");
-                    return;
-                }
-
-                const day = daySelect.value;
-                const hourNumber = parseInt(timeSelect.value); // Stundenummer aus Dropdown holen
-                const selectedAbbr = subjectSelect.value;
-                const teacher = teacherInput.value.trim();
-                const room = roomInput.value.trim();
-                let isSubstitute = isSubstituteCheckbox.checked; // Im Hauptformular frei wählbar
-                let isCancelled = false; // Standardmäßig nicht entfallen beim Hinzufügen/Aktualisieren
-
-                // Dieser Block ist für das Hauptformular, wo man den "Vertretung" Status manuell setzen kann.
-                // Wenn man über das Vertretungs-Modal kommt, wird isSubstitute bereits auf true gesetzt.
-                if (!day || !hourNumber || !selectedAbbr) {
-                    alert('Bitte Tag, Stunde und Fach auswählen.');
-                    return;
-                }
-
-                if (!timetable[day]) {
-                    timetable[day] = {};
-                }
-                timetable[day][hourNumber] = {
-                    abbr: selectedAbbr,
-                    teacher: teacher,
-                    room: room,
-                    isSubstitute: isSubstitute,
-                    isCancelled: isCancelled
-                };
-
-                saveTimetable(); // Stundenplan speichern
-                renderTimetable(); // Stundenplan neu zeichnen
-
-                // Eingabefelder zurücksetzen für die nächste Eingabe
-                subjectSelect.value = subjects[0].abbr;
-                teacherInput.value = '';
-                roomInput.value = '';
-                isSubstituteCheckbox.checked = false;
-                daySelect.value = days[0];
-                timeSelect.value = hoursAndTimes[0].hour; // Setzt auf die erste Stunde (1.)
-                isAdminEditingBaseTimetable = true; // Setze den Modus nach dem Speichern wieder auf "Basis"
-                updateAdminControlsVisibility(); // Aktualisiere den Zustand der Checkbox etc. nach dem Zurücksetzen
-            });
-
-            /**
-             * Event Listener für den "Stundenplan löschen"-Button.
-             * Löscht den gesamten Stundenplan nach Bestätigung (nur für Admin).
-             */
-            clearBtn.addEventListener('click', () => {
-                if (!currentUser || currentUser.role !== 'admin') {
-                    alert("Keine Berechtigung zum Löschen des Stundenplans.");
-                    return;
-                }
-
-                if (confirm('Möchtest du wirklich den gesamten Stundenplan löschen? Dies ist unwiderruflich!')) {
-                    localStorage.removeItem(timetableDataKey);
-                    timetable = {}; // Daten im Speicher leeren
-                    // Lösche auch alle Abwesenheiten, da der Plan leer ist
-                    localStorage.removeItem(teacherUnavailabilityKey);
-                    teacherUnavailability = {};
-                    saveTeacherUnavailability(); // Speichert leeres Objekt und rendert neu
-                    renderTimetable(); // Tabelle neu rendern
-                    alert('Stundenplan wurde komplett gelöscht.');
-                }
-            });
-
-            /**
-             * Setzt die Woche zurück, indem alle Vertretungen, Entfälle und Lehrer-Abwesenheiten gelöscht werden.
-             */
-            resetWeekBtn.addEventListener('click', () => {
-                if (!currentUser || currentUser.role !== 'admin') {
-                    alert("Keine Berechtigung, die Woche zurückzusetzen.");
-                    return;
-                }
-
-                if (confirm('Möchtest du wirklich die Woche zurücksetzen? Alle Entfälle, Vertretungen und Abwesenheiten werden gelöscht!')) {
-                    // Iteriere über alle Stunden und setze Vertretung/Entfall zurück
-                    for (const day in timetable) {
-                        for (const hour in timetable[day]) {
-                            if (timetable[day][hour]) {
-                                timetable[day][hour].isSubstitute = false;
-                                timetable[day][hour].isCancelled = false;
-                            }
-                        }
-                    }
-                    // Lehrer-Abwesenheiten ebenfalls löschen
-                    localStorage.removeItem(teacherUnavailabilityKey);
-                    teacherUnavailability = {};
-
-                    saveTimetable(); // Stundenplan speichern
-                    saveTeacherUnavailability(); // Abwesenheiten speichern (leeren)
-                    renderTimetable(); // Stundenplan neu zeichnen
-                    alert('Woche wurde zurückgesetzt. Alle Entfälle, Vertretungen und Abwesenheiten wurden gelöscht.');
-                }
-            });
-
-
-            /**
-             * Markiert einen Lehrer als abwesend.
-             */
-            markTeacherUnavailableBtn.addEventListener('click', () => {
-                if (!currentUser || currentUser.role !== 'admin') {
-                    alert("Keine Berechtigung, Lehrer als abwesend zu markieren.");
-                    return;
-                }
-                const teacherName = unavailableTeacherInput.value.trim();
-                if (!teacherName) {
-                    alert('Bitte den Namen der Lehrkraft eingeben.');
-                    return;
-                }
-
-                const selectedDays = [];
-                unavailableDayCheckboxes.forEach(checkbox => {
-                    if (checkbox.checked) {
-                        selectedDays.push(checkbox.value);
-                    }
-                });
-
-                if (selectedDays.length === 0) {
-                    alert('Bitte mindestens einen Tag für die Abwesenheit auswählen.');
-                    return;
-                }
-
-                teacherUnavailability[teacherName] = selectedDays;
-                saveTeacherUnavailability(); // Speichert und rendert neu
-
-                unavailableTeacherInput.value = '';
-                unavailableDayCheckboxes.forEach(checkbox => checkbox.checked = false);
-            });
-
-            /**
-             * Löscht alle gespeicherten Lehrer-Abwesenheiten.
-             */
-            clearUnavailableBtn.addEventListener('click', () => {
-                if (!currentUser || currentUser.role !== 'admin') {
-                    alert("Keine Berechtigung, Abwesenheiten zu löschen.");
-                    return;
-                }
-                if (confirm('Möchtest du wirklich alle Abwesenheiten löschen?')) {
-                    localStorage.removeItem(teacherUnavailabilityKey);
-                    teacherUnavailability = {};
-                    saveTeacherUnavailability(); // Speichert leeres Objekt und rendert neu
-                }
-            });
-
-            // Initialisierung bei DOM-Bereitschaft
-            populateTimeSelect(); // Stunden-Dropdown füllen (jetzt mit Stunden 1-8)
-            populateSubjectSelects(); // Fächer-Dropdowns füllen (beide)
-
-            // Lade den aktuellen Benutzer aus localStorage
-            const storedUser = localStorage.getItem(currentUserKey);
-            if (storedUser) {
-                currentUser = JSON.parse(storedUser);
-            }
-            updateUIBasedOnLoginStatus(); // UI basierend auf dem initialen Status aktualisieren
-
-            // Event Listener für den Login-Button
-            loginButton.addEventListener('click', handleLogin);
-            // Event Listener für Enter-Taste im Passwortfeld
-            loginPasswordInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    handleLogin();
-                }
-            });
-            loginUsernameInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    loginPasswordInput.focus(); // Fokus auf Passwortfeld verschieben
-                }
-            });
-
-            // Event Listener für Bottom Navigation
-            navItems.forEach(item => {
-                item.addEventListener('click', () => {
-                    const viewId = item.dataset.view;
-                    showView(viewId);
-                });
-            });
-
-            // Event Listener für Modal-Buttons
-            editLessonBtn.addEventListener('click', handleCellEditLoad);
-            cancelLessonBtn.addEventListener('click', handleCancelLesson);
-            assignSubstituteBtn.addEventListener('click', handleAssignSubstitute);
-            closeModalBtn.addEventListener('click', closeLessonOptionsModal);
-            lessonOptionsModal.addEventListener('click', (event) => { // Schließt Modal bei Klick außerhalb
-                if (event.target === lessonOptionsModal) {
-                    closeLessonOptionsModal();
-                }
-            });
-
-            // NEU: Event Listener für Vertretungs-Modal
-            closeSubstituteModalBtn.addEventListener('click', () => {
-                assignSubstituteModal.style.display = 'none';
-            });
-            assignSubstituteModal.addEventListener('click', (event) => { // Schließt Vertretungs-Modal bei Klick außerhalb
-                if (event.target === assignSubstituteModal) {
-                    assignSubstituteModal.style.display = 'none';
-                }
-            });
-
-            // Standardansicht beim Start
-            showView('startView');
         });
     </script>
 </body>
