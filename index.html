@@ -34,12 +34,35 @@
         body {
             background-color: #f5f7fa;
             color: var(--dark);
-            opacity: 0;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f5f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
             transition: opacity 0.3s ease;
         }
 
-        body.loaded {
-            opacity: 1;
+        .loading-spinner {
+            border: 4px solid rgba(67, 97, 238, 0.2);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         /* Login Container */
@@ -313,6 +336,11 @@
     </style>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
     <!-- Login Screen -->
     <div id="login-container" class="login-container">
         <div class="login-box">
@@ -539,6 +567,7 @@
         const loginAlert = document.getElementById('login-alert');
         const loginBtn = document.getElementById('login-btn');
         const registerBtn = document.getElementById('register-btn');
+        const loadingOverlay = document.getElementById('loading-overlay');
 
         // Initialisierung
         document.addEventListener('DOMContentLoaded', () => {
@@ -546,21 +575,29 @@
             loginContainer.style.display = 'none';
             appContent.style.display = 'none';
             
+            // Setze ein Timeout als Fallback
+            const loadingTimeout = setTimeout(() => {
+                loadingOverlay.style.display = 'none';
+            }, 5000); // Nach 5 Sekunden auf jeden Fall ausblenden
+
             // Auth State Observer
             auth.onAuthStateChanged(user => {
+                // Clear the timeout when auth is ready
+                clearTimeout(loadingTimeout);
+                
                 if (user) {
                     // User ist angemeldet
                     console.log('User angemeldet:', user.email);
-                    loadUserData(user);
-                    showAppContent();
+                    loadUserData(user).then(() => {
+                        showAppContent();
+                        loadingOverlay.style.display = 'none';
+                    });
                 } else {
                     // User ist abgemeldet
                     console.log('Kein User angemeldet');
                     showLoginScreen();
+                    loadingOverlay.style.display = 'none';
                 }
-                
-                // Seite einblenden
-                document.body.classList.add('loaded');
             });
             
             // Event Listener
