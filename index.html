@@ -180,7 +180,7 @@
                     <label for="login-password"><i class="fas fa-lock"></i> Passwort:</label>
                     <input type="password" id="login-password" class="form-control" required>
                 </div>
-                <button type="button" onclick="login()" class="btn btn-primary btn-block">
+                <button type="button" id="login-btn" class="btn btn-primary btn-block">
                     <i class="fas fa-sign-in-alt"></i> Anmelden
                 </button>
                 <div class="text-center mt-3">
@@ -221,7 +221,7 @@
 
     <!-- App Content -->
     <div id="app-content">
-        <!-- [Ihr App-Inhalt hier] -->
+        <!-- App-Inhalt hier -->
     </div>
 
     <script>
@@ -245,11 +245,44 @@
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
         const loginAlert = document.getElementById('login-alert');
+        const loginBtn = document.getElementById('login-btn');
         const registerBtn = document.getElementById('register-btn');
 
-        // Registrierungsfunktion
+        // Event Listener
+        loginBtn.addEventListener('click', login);
         registerBtn.addEventListener('click', register);
 
+        // Anmeldefunktion
+        function login() {
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+
+            // Validierung
+            if (!email || !password) {
+                showAlert(loginAlert, 'Bitte geben Sie E-Mail und Passwort ein!', 'error');
+                return;
+            }
+
+            showAlert(loginAlert, 'Anmeldung läuft...', 'success');
+
+            // Firebase Anmeldung
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // Erfolgreich angemeldet
+                    showAlert(loginAlert, 'Anmeldung erfolgreich!', 'success');
+                    console.log('Erfolgreich angemeldet:', userCredential.user.email);
+                    
+                    // Hier können Sie zur App weiterleiten
+                    document.getElementById('login-container').style.display = 'none';
+                    document.getElementById('app-content').style.display = 'block';
+                })
+                .catch((error) => {
+                    showAlert(loginAlert, getAuthErrorMessage(error), 'error');
+                    console.error('Anmeldefehler:', error);
+                });
+        }
+
+        // Registrierungsfunktion
         function register() {
             const name = document.getElementById('register-name').value.trim();
             const email = document.getElementById('register-email').value.trim();
@@ -292,6 +325,10 @@
                     // Automatische Anmeldung nach Registrierung
                     return auth.signInWithEmailAndPassword(email, password);
                 })
+                .then(() => {
+                    // Zurück zum Login-Formular nach erfolgreicher Registrierung
+                    showLoginForm();
+                })
                 .catch((error) => {
                     showAlert(loginAlert, getAuthErrorMessage(error), 'error');
                     console.error('Registrierungsfehler:', error);
@@ -302,6 +339,9 @@
             loginForm.style.display = 'block';
             registerForm.style.display = 'none';
             loginAlert.style.display = 'none';
+            // Formular zurücksetzen
+            document.getElementById('login-email').value = '';
+            document.getElementById('login-password').value = '';
         }
 
         function showRegisterForm() {
@@ -349,9 +389,13 @@
                 // User ist angemeldet
                 console.log('User angemeldet:', user.email);
                 // Hier können Sie zur App weiterleiten
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('app-content').style.display = 'block';
             } else {
                 // User ist abgemeldet
                 console.log('Kein User angemeldet');
+                document.getElementById('login-container').style.display = 'flex';
+                document.getElementById('app-content').style.display = 'none';
             }
         });
     </script>
