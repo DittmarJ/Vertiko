@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Angebotsmanager</title>
-    <!-- Firebase SDK einbinden -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
@@ -334,7 +334,7 @@
             <div id="login-form">
                 <div class="form-group">
                     <label for="login-email">E-Mail:</label>
-                    <input type="text" id="login-email" required>
+                    <input type="email" id="login-email" required>
                 </div>
                 <div class="form-group">
                     <label for="login-password">Passwort:</label>
@@ -351,15 +351,15 @@
                 </div>
                 <div class="form-group">
                     <label for="register-email">E-Mail:</label>
-                    <input type="text" id="register-email" required>
+                    <input type="email" id="register-email" required>
                 </div>
                 <div class="form-group">
-                    <label for="register-password">Passwort:</label>
-                    <input type="password" id="register-password" required>
+                    <label for="register-password">Passwort (min. 6 Zeichen):</label>
+                    <input type="password" id="register-password" minlength="6" required>
                 </div>
                 <div class="form-group">
                     <label for="register-confirm">Passwort bestätigen:</label>
-                    <input type="password" id="register-confirm" required>
+                    <input type="password" id="register-confirm" minlength="6" required>
                 </div>
                 <button type="button" onclick="register()">Registrieren</button>
                 <button type="button" style="background-color: var(--secondary-color); margin-left: 10px;" onclick="showLoginForm()">Zurück zur Anmeldung</button>
@@ -376,9 +376,9 @@
                 <p id="user-email"></p>
             </div>
             <ul class="sidebar-menu">
-                <li class="active" onclick="showSection('welcome')"><i class="fas fa-home"></i> Willkommen</li>
-                <li onclick="showSection('overview')"><i class="fas fa-list"></i> Angebotsübersicht</li>
-                <li onclick="showSection('new-offer')"><i class="fas fa-plus"></i> Neues Angebot</li>
+                <li class="active" onclick="showSection('welcome')">Willkommen</li>
+                <li onclick="showSection('overview')">Angebotsübersicht</li>
+                <li onclick="showSection('new-offer')">Neues Angebot</li>
             </ul>
         </div>
 
@@ -399,11 +399,11 @@
                 <div id="welcome-section" class="section">
                     <div class="welcome-message">
                         <h2>Willkommen beim Angebotsmanager!</h2>
-                        <p>Verwalten Sie Ihre Angebote einfach und effizient.</p>
+                        <p id="personal-welcome"></p>
                     </div>
                     <div class="card">
                         <h3>Letzte Aktivitäten</h3>
-                        <p>Hier könnten Ihre letzten Aktivitäten angezeigt werden...</p>
+                        <div id="recent-activities"></div>
                     </div>
                 </div>
 
@@ -411,9 +411,10 @@
                 <div id="overview-section" class="section" style="display: none;">
                     <h2>Angebotsübersicht</h2>
                     <div class="card">
-                        <div class="filter-controls">
+                        <div class="form-group">
+                            <label for="filter-season">Ferienfilter:</label>
                             <select id="filter-season" onchange="filterOffers()">
-                                <option value="">Alle Ferien anzeigen</option>
+                                <option value="">Alle anzeigen</option>
                                 <option value="Fasnacht">Fasnacht</option>
                                 <option value="Ostern">Ostern</option>
                                 <option value="Pfingsten">Pfingsten</option>
@@ -447,6 +448,7 @@
                 <div id="new-offer-section" class="section" style="display: none;">
                     <h2>Neues Angebot erstellen</h2>
                     <div class="card">
+                        <div id="offer-alert" class="alert" style="display: none;"></div>
                         <form id="offer-form">
                             <div class="form-group">
                                 <label for="offer-name">Angebotsname:</label>
@@ -502,14 +504,15 @@
     </div>
 
     <script>
-        // Firebase-Konfiguration
+        // Firebase-Konfiguration mit Ihren Daten
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyAyO_3QNTZq2IOdvBMm6ZLHYFv96H9F50I",
+            authDomain: "verkaufssoftware.firebaseapp.com",
+            projectId: "verkaufssoftware",
+            storageBucket: "verkaufssoftware.appspot.com",
+            messagingSenderId: "268747007466",
+            appId: "1:268747007466:web:c84a529f27a0f6849a3e93",
+            measurementId: "G-RMX5KJK543"
         };
 
         // Firebase initialisieren
@@ -519,6 +522,7 @@
 
         // Globale Variablen
         let currentUser = null;
+        let userData = null;
 
         // DOM laden
         document.addEventListener('DOMContentLoaded', function() {
@@ -531,12 +535,31 @@
             // Firebase Auth State Observer
             auth.onAuthStateChanged(user => {
                 if (user) {
-                    // User is signed in
+                    // User ist angemeldet
                     currentUser = user;
-                    showAppContent();
+                    
+                    // Benutzerdaten laden
+                    db.collection('artifacts/verkaufssoftware/users').doc(user.uid).get()
+                        .then(doc => {
+                            if (doc.exists) {
+                                userData = doc.data();
+                                showAppContent();
+                            } else {
+                                // Benutzerdaten erstellen, falls nicht vorhanden
+                                userData = {
+                                    name: user.displayName || user.email.split('@')[0],
+                                    email: user.email,
+                                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                };
+                                
+                                db.collection('artifacts/verkaufssoftware/users').doc(user.uid).set(userData)
+                                    .then(() => showAppContent());
+                            }
+                        });
                 } else {
-                    // User is signed out
+                    // User ist abgemeldet
                     currentUser = null;
+                    userData = null;
                     showLoginScreen();
                 }
             });
@@ -566,13 +589,15 @@
                 return;
             }
             
+            showAlert(alertBox, 'Anmeldung läuft...', 'success');
+            
             auth.signInWithEmailAndPassword(email, password)
                 .then((userCredential) => {
                     // Erfolgreich angemeldet
                     showAlert(alertBox, 'Anmeldung erfolgreich!', 'success');
                 })
                 .catch((error) => {
-                    showAlert(alertBox, error.message, 'error');
+                    showAlert(alertBox, getAuthErrorMessage(error), 'error');
                 });
         }
         
@@ -594,13 +619,20 @@
                 return;
             }
             
+            if (password.length < 6) {
+                showAlert(alertBox, 'Passwort muss mindestens 6 Zeichen lang sein!', 'error');
+                return;
+            }
+            
+            showAlert(alertBox, 'Registrierung läuft...', 'success');
+            
             auth.createUserWithEmailAndPassword(email, password)
                 .then((userCredential) => {
                     // Benutzer erfolgreich registriert
                     const user = userCredential.user;
                     
                     // Zusätzliche Benutzerdaten in Firestore speichern
-                    return db.collection('users').doc(user.uid).set({
+                    return db.collection('artifacts/verkaufssoftware/users').doc(user.uid).set({
                         name: name,
                         email: email,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -611,14 +643,12 @@
                     showLoginForm();
                 })
                 .catch((error) => {
-                    showAlert(alertBox, error.message, 'error');
+                    showAlert(alertBox, getAuthErrorMessage(error), 'error');
                 });
         }
         
         function logout() {
-            auth.signOut().then(() => {
-                // Sign-out successful
-            }).catch((error) => {
+            auth.signOut().catch((error) => {
                 console.error('Logout error:', error);
             });
         }
@@ -646,10 +676,14 @@
             
             // Benutzerdaten anzeigen
             document.getElementById('user-email').textContent = currentUser.email;
-            document.getElementById('welcome-user').textContent = currentUser.email;
+            document.getElementById('welcome-user').textContent = userData?.name || currentUser.email;
+            document.getElementById('personal-welcome').textContent = `Hallo ${userData?.name || currentUser.email}, willkommen zurück!`;
             
             // Willkommensnachricht anzeigen
             showSection('welcome');
+            
+            // Letzte Aktivitäten laden
+            loadRecentActivities();
             
             // Angebote laden
             loadOffers();
@@ -665,6 +699,7 @@
             const name = document.getElementById('offer-name').value.trim();
             const description = document.getElementById('offer-desc').value.trim();
             const guide = document.getElementById('offer-guide').value.trim();
+            const alertBox = document.getElementById('offer-alert');
             
             // Ausgewählte Ferien sammeln
             const selected = document.querySelectorAll('#options-container input[type="checkbox"]:checked:not([value="Alle"])');
@@ -678,30 +713,36 @@
             
             // Validierung
             if (!name || !description || !guide || seasons.length === 0) {
-                alert('Bitte füllen Sie alle Felder aus!');
+                showAlert(alertBox, 'Bitte füllen Sie alle Felder aus!', 'error');
                 return;
             }
             
             // Neues Angebot in Firestore speichern
-            db.collection('artifacts/offers/public/data').add({
+            db.collection('artifacts/verkaufssoftware/public/data').add({
                 name: name,
                 description: description,
                 guide: guide,
                 seasons: seasons,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                createdBy: currentUser.uid
+                createdBy: currentUser.uid,
+                createdByName: userData?.name || currentUser.email
             })
-            .then(() => {
-                alert('Angebot wurde erfolgreich gespeichert!');
+            .then((docRef) => {
+                showAlert(alertBox, 'Angebot wurde erfolgreich gespeichert!', 'success');
                 document.getElementById('offer-form').reset();
                 document.querySelectorAll('#options-container input[type="checkbox"]').forEach(cb => cb.checked = false);
                 updateSelectedTags();
+                
+                // Angebote und Aktivitäten aktualisieren
                 loadOffers();
+                loadRecentActivities();
+                
+                // Zur Übersicht wechseln
                 showSection('overview');
             })
             .catch((error) => {
                 console.error('Error saving offer:', error);
-                alert('Fehler beim Speichern des Angebots: ' + error.message);
+                showAlert(alertBox, 'Fehler beim Speichern: ' + error.message, 'error');
             });
         }
         
@@ -711,7 +752,7 @@
             const tbody = document.querySelector('#offers-table tbody');
             tbody.innerHTML = '';
             
-            db.collection('artifacts/offers/public/data')
+            db.collection('artifacts/verkaufssoftware/public/data')
                 .orderBy('createdAt', 'desc')
                 .get()
                 .then((querySnapshot) => {
@@ -736,6 +777,43 @@
                 });
         }
         
+        function loadRecentActivities() {
+            if (!currentUser) return;
+            
+            const activitiesDiv = document.getElementById('recent-activities');
+            activitiesDiv.innerHTML = 'Lade Aktivitäten...';
+            
+            db.collection('artifacts/verkaufssoftware/public/data')
+                .where('createdBy', '==', currentUser.uid)
+                .orderBy('createdAt', 'desc')
+                .limit(3)
+                .get()
+                .then((querySnapshot) => {
+                    if (querySnapshot.empty) {
+                        activitiesDiv.innerHTML = '<p>Noch keine Aktivitäten</p>';
+                        return;
+                    }
+                    
+                    let html = '<ul style="list-style-type: none; padding: 0;">';
+                    querySnapshot.forEach(doc => {
+                        const offer = doc.data();
+                        html += `
+                            <li style="padding: 8px 0; border-bottom: 1px solid #eee;">
+                                <strong>${offer.name}</strong><br>
+                                <small>${offer.createdAt?.toDate().toLocaleString() || ''}</small>
+                            </li>
+                        `;
+                    });
+                    html += '</ul>';
+                    
+                    activitiesDiv.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error loading activities:', error);
+                    activitiesDiv.innerHTML = '<p>Fehler beim Laden der Aktivitäten</p>';
+                });
+        }
+        
         function filterOffers() {
             const filterValue = document.getElementById('filter-season').value;
             const tbody = document.querySelector('#offers-table tbody');
@@ -756,10 +834,11 @@
             const detailsDiv = document.getElementById('offer-details');
             detailsDiv.innerHTML = `
                 <h4>${offer.name}</h4>
+                <p><strong>Erstellt von:</strong> ${offer.createdByName || 'Unbekannt'}</p>
                 <p><strong>Ferien:</strong> ${offer.seasons.join(', ')}</p>
                 <p><strong>Erstellt am:</strong> ${offer.createdAt?.toDate().toLocaleString() || ''}</p>
                 <h5>Anleitung:</h5>
-                <pre>${offer.guide}</pre>
+                <pre style="white-space: pre-wrap; background: #f5f5f5; padding: 10px; border-radius: 4px;">${offer.guide}</pre>
             `;
         }
 
@@ -842,6 +921,23 @@
             setTimeout(() => {
                 element.style.display = 'none';
             }, 5000);
+        }
+        
+        function getAuthErrorMessage(error) {
+            switch (error.code) {
+                case 'auth/email-already-in-use':
+                    return 'Diese E-Mail ist bereits registriert.';
+                case 'auth/invalid-email':
+                    return 'Ungültige E-Mail-Adresse.';
+                case 'auth/weak-password':
+                    return 'Passwort ist zu schwach (mindestens 6 Zeichen).';
+                case 'auth/user-not-found':
+                    return 'Benutzer nicht gefunden.';
+                case 'auth/wrong-password':
+                    return 'Falsches Passwort.';
+                default:
+                    return error.message || 'Ein Fehler ist aufgetreten.';
+            }
         }
     </script>
 </body>
