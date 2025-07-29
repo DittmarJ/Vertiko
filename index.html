@@ -553,11 +553,25 @@
             appId: "1:268747007466:web:c84a529f27a0f6849a3e93",
             measurementId: "G-RMX5KJK543"
         };
-
-        // Firebase initialisieren
-        const app = firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+        
+        // Firebase mit Error-Handling initialisieren
+        let auth, db;
+        
+        try {
+            const app = firebase.initializeApp(firebaseConfig);
+            auth = firebase.auth();
+            db = firebase.firestore();
+            console.log("Firebase erfolgreich initialisiert");
+        
+            // Testabfrage zur Firestore-Verbindungsprüfung
+            db.collection("test").limit(1).get()
+                .then(() => console.log("Firestore-Verbindung funktioniert"))
+                .catch(e => console.error("Firestore-Fehler:", e));
+        } catch (error) {
+            console.error("Firebase-Initialisierungsfehler:", error);
+            document.getElementById('loading-overlay').innerHTML = 
+                '<div style="color:red;text-align:center;">Fehler bei der Initialisierung. Bitte Seite neu laden.</div>';
+        }
 
         // DOM Elemente
         const loginContainer = document.getElementById('login-container');
@@ -580,24 +594,58 @@
                 loadingOverlay.style.display = 'none';
             }, 5000); // Nach 5 Sekunden auf jeden Fall ausblenden
 
-            // Auth State Observer
+if (firebase.database) {
+    firebase.database().ref('.info/connected').on('value', (snapshot) => {
+        if (snapshot.val() === true) {
+            console.log("Mit Firebase verbunden");
+        } else {
+            console.warn("Keine Verbindung zu Firebase");
+            document.getElementById('loading-overlay').innerHTML = `
+                <div style="text-align:center;">
+                    <p style="color:red;">Keine Internetverbindung</p>
+                    <p>Bitte überprüfen Sie Ihr Netzwerk</p>
+                </div>
+            `;
+        }
+    });
+}
+            
+// Timeout für Auth-Status (10 Sekunden)
+const authTimeout = setTimeout(() => {
+    console.error("Auth-Zeitüberschreitung - keine Antwort von Firebase");
+    document.getElementById('loading-overlay').innerHTML = `
+        <div style="text-align:center;">
+            <p style="color:red;">Verbindungsproblem mit Firebase</p>
+            <button onclick="window.location.reload()" class="btn btn-primary">
+                Seite neu laden
+            </button>
+        </div>
+    `;
+}, 10000);
+
+            // Auth-State Observer mit Error-Handling
             auth.onAuthStateChanged(user => {
-                // Clear the timeout when auth is ready
-                clearTimeout(loadingTimeout);
-                
+                clearTimeout(authTimeout); // Timeout löschen
+                document.getElementById('loading-overlay').style.display = 'none';
+            
                 if (user) {
-                    // User ist angemeldet
                     console.log('User angemeldet:', user.email);
-                    loadUserData(user).then(() => {
-                        showAppContent();
-                        loadingOverlay.style.display = 'none';
-                    });
+                    loadUserData(user).then(showAppContent);
                 } else {
-                    // User ist abgemeldet
                     console.log('Kein User angemeldet');
                     showLoginScreen();
-                    loadingOverlay.style.display = 'none';
                 }
+            }).catch(error => {
+                console.error('Auth Observer Fehler:', error);
+                document.getElementById('loading-overlay').innerHTML = `
+                    <div style="text-align:center;">
+                        <p style="color:red;">Authentifizierungsfehler</p>
+                        <p>${error.message}</p>
+                        <button onclick="window.location.reload()" class="btn btn-primary">
+                            Neu versuchen
+                        </button>
+                    </div>
+                `;
             });
             
             // Event Listener
@@ -612,22 +660,35 @@
         });
 
         function loadUserData(user) {
-            return db.collection('artifacts/verkaufssoftware/users').doc(user.uid).get()
-                .then(doc => {
-                    if (doc.exists) {
-                        const userData = doc.data();
-                        document.getElementById('user-email').textContent = user.email;
-                        document.getElementById('personal-welcome').textContent = `Hallo ${userData.name}, willkommen zurück!`;
-                        document.getElementById('user-avatar').textContent = userData.name.charAt(0).toUpperCase();
-                        return userData;
-                    }
-                    return null;
-                })
-                .catch(error => {
-                    console.error('Fehler beim Laden der Benutzerdaten:', error);
-                    return null;
+    return db.collection('artifacts/verkaufssoftware/users').doc(user.uid).get()
+        .then(doc => {
+            if (!doc.exists) {
+                console.warn("Keine Benutzerdaten gefunden - erstelle Standarddaten");
+                return db.collection('artifacts/verkaufssoftware/users').doc(user.uid).set({
+                    name: user.email.split('@')[0], // Fallback: Nutze E-Mail-Prefix als Namen
+                    email: user.email,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-        }
+            }
+            return doc.data();
+        })
+        .then(userData => {
+            // Fallback: Wenn kein Name existiert, nutze den E-Mail-Prefix
+            const userName = userData?.name || user.email.split('@')[0];
+            document.getElementById('user-email').textContent = user.email;
+            document.getElementById('personal-welcome').textContent = `Hallo ${userName}, willkommen zurück!`;
+            document.getElementById('user-avatar').textContent = userName.charAt(0).toUpperCase();
+            return userData;
+        })
+        .catch(error => {
+            console.error('Fehler beim Laden der Benutzerdaten:', error);
+            // Fallback: Zeige mindestens die E-Mail an
+            document.getElementById('user-email').textContent = user.email;
+            document.getElementById('personal-welcome').textContent = `Hallo ${user.email.split('@')[0]}, willkommen zurück!`;
+            document.getElementById('user-avatar').textContent = user.email.charAt(0).toUpperCase();
+            return null;
+        });
+}
 
         function showAppContent() {
             loginContainer.style.display = 'none';
