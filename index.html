@@ -543,6 +543,7 @@
     </div>
 
     <script>
+
         // Firebase-Konfiguration
         const firebaseConfig = {
             apiKey: "AIzaSyAyO_3QNTZq2IOdvBMm6ZLHYFv96H9F50I",
@@ -554,74 +555,126 @@
             measurementId: "G-RMX5KJK543"
         };
         
-        // Firebase mit Error-Handling initialisieren
-        let auth, db;
+        // Firebase initialisieren
+        let app, auth, db;
         
         try {
-            const app = firebase.initializeApp(firebaseConfig);
+            app = firebase.initializeApp(firebaseConfig);
             auth = firebase.auth();
             db = firebase.firestore();
             console.log("Firebase erfolgreich initialisiert");
-        
-            // Testabfrage zur Firestore-Verbindungsprüfung
-            db.collection("test").limit(1).get()
-                .then(() => console.log("Firestore-Verbindung funktioniert"))
-                .catch(e => console.error("Firestore-Fehler:", e));
-        } catch (error) {
-            console.error("Firebase-Initialisierungsfehler:", error);
-            document.getElementById('loading-overlay').innerHTML = 
-                '<div style="color:red;text-align:center;">Fehler bei der Initialisierung. Bitte Seite neu laden.</div>';
-        }
-
-        // DOM Elemente
-        const loginContainer = document.getElementById('login-container');
-        const appContent = document.getElementById('app-content');
-        const loginForm = document.getElementById('login-form');
-        const registerForm = document.getElementById('register-form');
-        const loginAlert = document.getElementById('login-alert');
-        const loginBtn = document.getElementById('login-btn');
-        const registerBtn = document.getElementById('register-btn');
-        const loadingOverlay = document.getElementById('loading-overlay');
-
-        // Initialisierung
-        document.addEventListener('DOMContentLoaded', () => {
-            // Verstecke alles zunächst
-            loginContainer.style.display = 'none';
-            appContent.style.display = 'none';
             
-            // Setze ein Timeout als Fallback
-            const loadingTimeout = setTimeout(() => {
-                loadingOverlay.style.display = 'none';
-            }, 5000); // Nach 5 Sekunden auf jeden Fall ausblenden
-
-if (firebase.database) {
-    firebase.database().ref('.info/connected').on('value', (snapshot) => {
-        if (snapshot.val() === true) {
-            console.log("Mit Firebase verbunden");
-        } else {
-            console.warn("Keine Verbindung zu Firebase");
-            document.getElementById('loading-overlay').innerHTML = `
+            // Spracheinstellungen übernehmen
+            auth.useDeviceLanguage();
+            
+            // Verbindungsstatus überprüfen
+            if (firebase.database) {
+                firebase.database().ref('.info/connected').on('value', (snapshot) => {
+                    if (snapshot.val() === true) {
+                        console.log("Mit Firebase verbunden");
+                    } else {
+                        console.warn("Keine Verbindung zu Firebase");
+                        showConnectionError();
+                    }
+                });
+            }
+        } catch (error) {
+            console.error("Firebase Initialisierungsfehler:", error);
+            showInitializationError();
+        }
+        
+        function showConnectionError() {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            loadingOverlay.innerHTML = `
                 <div style="text-align:center;">
                     <p style="color:red;">Keine Internetverbindung</p>
-                    <p>Bitte überprüfen Sie Ihr Netzwerk</p>
+                    <p>Bitte überprüfen Sie Ihre Netzwerkverbindung</p>
+                    <button onclick="window.location.reload()" class="btn btn-primary">
+                        Neu laden
+                    </button>
                 </div>
             `;
         }
-    });
-}
-            
-// Timeout für Auth-Status (10 Sekunden)
-const authTimeout = setTimeout(() => {
-    console.error("Auth-Zeitüberschreitung - keine Antwort von Firebase");
-    document.getElementById('loading-overlay').innerHTML = `
-        <div style="text-align:center;">
-            <p style="color:red;">Verbindungsproblem mit Firebase</p>
-            <button onclick="window.location.reload()" class="btn btn-primary">
-                Seite neu laden
-            </button>
-        </div>
-    `;
-}, 10000);
+        
+        function showInitializationError() {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            loadingOverlay.innerHTML = `
+                <div style="text-align:center;">
+                    <p style="color:red;">Initialisierungsfehler</p>
+                    <p>Die Anwendung konnte nicht gestartet werden</p>
+                    <button onclick="window.location.reload()" class="btn btn-primary">
+                        Neu versuchen
+                    </button>
+                </div>
+            `;
+        }
+        
+        function checkAuthInitialization() {
+            if (!auth) {
+                console.error("Authentifizierung nicht initialisiert");
+                document.getElementById('loading-overlay').innerHTML = `
+                    <div style="text-align:center;">
+                        <p style="color:red;">Systemfehler</p>
+                        <p>Authentifizierungssystem nicht verfügbar</p>
+                        <button onclick="window.location.reload()" class="btn btn-primary">
+                            Neu laden
+                        </button>
+                    </div>
+                `;
+                return false;
+            }
+            return true;
+        }
+        
+                // DOM Elemente
+                const loginContainer = document.getElementById('login-container');
+                const appContent = document.getElementById('app-content');
+                const loginForm = document.getElementById('login-form');
+                const registerForm = document.getElementById('register-form');
+                const loginAlert = document.getElementById('login-alert');
+                const loginBtn = document.getElementById('login-btn');
+                const registerBtn = document.getElementById('register-btn');
+                const loadingOverlay = document.getElementById('loading-overlay');
+        
+                // Initialisierung
+                document.addEventListener('DOMContentLoaded', () => {
+                    // Verstecke alles zunächst
+                    loginContainer.style.display = 'none';
+                    appContent.style.display = 'none';
+                    
+                    // Setze ein Timeout als Fallback
+                    const loadingTimeout = setTimeout(() => {
+                        loadingOverlay.style.display = 'none';
+                    }, 5000); // Nach 5 Sekunden auf jeden Fall ausblenden
+        
+        if (firebase.database) {
+            firebase.database().ref('.info/connected').on('value', (snapshot) => {
+                if (snapshot.val() === true) {
+                    console.log("Mit Firebase verbunden");
+                } else {
+                    console.warn("Keine Verbindung zu Firebase");
+                    document.getElementById('loading-overlay').innerHTML = `
+                        <div style="text-align:center;">
+                            <p style="color:red;">Keine Internetverbindung</p>
+                            <p>Bitte überprüfen Sie Ihr Netzwerk</p>
+                        </div>
+                    `;
+                }
+            });
+        }
+                    
+        // Timeout für Auth-Status (10 Sekunden)
+        const authTimeout = setTimeout(() => {
+            console.error("Auth-Zeitüberschreitung - keine Antwort von Firebase");
+            document.getElementById('loading-overlay').innerHTML = `
+                <div style="text-align:center;">
+                    <p style="color:red;">Verbindungsproblem mit Firebase</p>
+                    <button onclick="window.location.reload()" class="btn btn-primary">
+                        Seite neu laden
+                    </button>
+                </div>
+            `;
+        }, 10000);
 
             // Auth-State Observer mit Error-Handling
             auth.onAuthStateChanged(user => {
@@ -649,8 +702,17 @@ const authTimeout = setTimeout(() => {
             });
             
             // Event Listener
-            loginBtn.addEventListener('click', login);
-            registerBtn.addEventListener('click', register);
+            loginBtn.addEventListener('click', () => {
+                if (checkAuthInitialization()) {
+                    login();
+                }
+            });
+            
+            registerBtn.addEventListener('click', () => {
+                if (checkAuthInitialization()) {
+                    register();
+                }
+            });
             
             // Formularverarbeitung
             document.getElementById('offer-form').addEventListener('submit', function(e) {
@@ -716,50 +778,67 @@ const authTimeout = setTimeout(() => {
         }
 
         function login() {
+            if (!checkAuthInitialization()) return;
+        
             const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value.trim();
-
+        
             if (!email || !password) {
                 showAlert(loginAlert, 'Bitte geben Sie E-Mail und Passwort ein!', 'error');
                 return;
             }
-
+        
             showAlert(loginAlert, 'Anmeldung läuft...', 'success');
-
+        
+            // Timeout für Login-Vorgang
+            const loginTimeout = setTimeout(() => {
+                showAlert(loginAlert, 'Timeout: Server antwortet nicht', 'error');
+            }, 10000);
+        
             auth.signInWithEmailAndPassword(email, password)
                 .then(() => {
+                    clearTimeout(loginTimeout);
                     showAlert(loginAlert, 'Anmeldung erfolgreich!', 'success');
                 })
                 .catch((error) => {
+                    clearTimeout(loginTimeout);
                     showAlert(loginAlert, getAuthErrorMessage(error), 'error');
                 });
         }
-
+        
         function register() {
+            if (!checkAuthInitialization()) return;
+        
             const name = document.getElementById('register-name').value.trim();
             const email = document.getElementById('register-email').value.trim();
             const password = document.getElementById('register-password').value.trim();
             const confirm = document.getElementById('register-confirm').value.trim();
-
+        
             if (!name || !email || !password || !confirm) {
                 showAlert(loginAlert, 'Bitte füllen Sie alle Felder aus!', 'error');
                 return;
             }
-
+        
             if (password !== confirm) {
                 showAlert(loginAlert, 'Passwörter stimmen nicht überein!', 'error');
                 return;
             }
-
+        
             if (password.length < 6) {
                 showAlert(loginAlert, 'Passwort muss mindestens 6 Zeichen lang sein!', 'error');
                 return;
             }
-
+        
             showAlert(loginAlert, 'Registrierung läuft...', 'success');
-
+        
+            // Timeout für Registrierungsvorgang
+            const registerTimeout = setTimeout(() => {
+                showAlert(loginAlert, 'Timeout: Server antwortet nicht', 'error');
+            }, 15000);
+        
             auth.createUserWithEmailAndPassword(email, password)
                 .then((userCredential) => {
+                    clearTimeout(registerTimeout);
                     return db.collection('artifacts/verkaufssoftware/users').doc(userCredential.user.uid).set({
                         name: name,
                         email: email,
@@ -771,41 +850,48 @@ const authTimeout = setTimeout(() => {
                     return auth.signInWithEmailAndPassword(email, password);
                 })
                 .catch((error) => {
+                    clearTimeout(registerTimeout);
                     showAlert(loginAlert, getAuthErrorMessage(error), 'error');
+                    
+                    // Falls der User erstellt wurde aber die Daten nicht gespeichert werden konnten
+                    if (error.code === 'auth/email-already-in-use') {
+                        auth.signInWithEmailAndPassword(email, password)
+                            .catch(e => console.error("Automatische Anmeldung fehlgeschlagen:", e));
+                    }
                 });
         }
-
-        function logout() {
-            auth.signOut().catch(error => {
-                console.error('Abmeldefehler:', error);
-            });
-        }
-
-        function loadOffers() {
-            const tbody = document.querySelector('#offers-table tbody');
-            tbody.innerHTML = '';
-
-            db.collection('artifacts/verkaufssoftware/public/data')
-                .orderBy('createdAt', 'desc')
-                .get()
-                .then(querySnapshot => {
-                    querySnapshot.forEach(doc => {
-                        const offer = doc.data();
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${offer.name}</td>
-                            <td>${offer.description}</td>
-                            <td>${offer.seasons.join(', ')}</td>
-                            <td>${offer.createdAt?.toDate().toLocaleString() || ''}</td>
-                        `;
-                        row.addEventListener('click', () => showOfferDetails(offer));
-                        tbody.appendChild(row);
+        
+                function logout() {
+                    auth.signOut().catch(error => {
+                        console.error('Abmeldefehler:', error);
                     });
-                })
-                .catch(error => {
-                    console.error('Fehler beim Laden der Angebote:', error);
-                });
-        }
+                }
+        
+                function loadOffers() {
+                    const tbody = document.querySelector('#offers-table tbody');
+                    tbody.innerHTML = '';
+        
+                    db.collection('artifacts/verkaufssoftware/public/data')
+                        .orderBy('createdAt', 'desc')
+                        .get()
+                        .then(querySnapshot => {
+                            querySnapshot.forEach(doc => {
+                                const offer = doc.data();
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                                    <td>${offer.name}</td>
+                                    <td>${offer.description}</td>
+                                    <td>${offer.seasons.join(', ')}</td>
+                                    <td>${offer.createdAt?.toDate().toLocaleString() || ''}</td>
+                                `;
+                                row.addEventListener('click', () => showOfferDetails(offer));
+                                tbody.appendChild(row);
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Fehler beim Laden der Angebote:', error);
+                        });
+                }
 
         function loadRecentActivities() {
             const activitiesDiv = document.getElementById('recent-activities');
