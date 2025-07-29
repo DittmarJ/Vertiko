@@ -34,11 +34,17 @@
         body {
             background-color: #f5f7fa;
             color: var(--dark);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        body.loaded {
+            opacity: 1;
         }
 
         /* Login Container */
         .login-container {
-            display: flex;
+            display: none;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
@@ -133,20 +139,19 @@
             padding: 1rem;
             border-radius: 8px;
             margin-bottom: 1.5rem;
+            display: none;
         }
 
         .alert-error {
             background-color: #fde8e8;
             color: var(--danger);
             border: 1px solid #fbc4c4;
-            display: none;
         }
 
         .alert-success {
             background-color: #e6f7f0;
             color: #0c9363;
             border: 1px solid #b8ebd6;
-            display: none;
         }
 
         .text-center {
@@ -161,6 +166,149 @@
         #app-content {
             display: none;
             min-height: 100vh;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--white);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+            position: fixed;
+            height: 100vh;
+            padding: 1.5rem 0;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 0 1.5rem 1.5rem;
+            border-bottom: 1px solid #f0f0f0;
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-header h3 {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-menu li i {
+            margin-right: 0.75rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-menu li:hover {
+            background-color: #f8f9fa;
+            color: var(--primary);
+        }
+
+        .sidebar-menu li.active {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+        }
+
+        .navbar {
+            background-color: var(--white);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logout-btn:hover {
+            color: var(--danger);
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        /* Welcome Section */
+        .welcome-message {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .welcome-message h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card {
+            background-color: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card h3 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
         }
     </style>
 </head>
@@ -221,7 +369,149 @@
 
     <!-- App Content -->
     <div id="app-content">
-        <!-- App-Inhalt hier -->
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h3><i class="fas fa-store-alt"></i> Angebotsmanager</h3>
+                <p id="user-email"></p>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="active" onclick="showSection('welcome')">
+                    <i class="fas fa-home"></i> Willkommen
+                </li>
+                <li onclick="showSection('overview')">
+                    <i class="fas fa-list"></i> Angebotsübersicht
+                </li>
+                <li onclick="showSection('new-offer')">
+                    <i class="fas fa-plus-circle"></i> Neues Angebot
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Navbar -->
+            <div class="navbar">
+                <div class="user-info">
+                    <div class="user-avatar" id="user-avatar"></div>
+                    <button class="logout-btn" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Abmelden
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content Sections -->
+            <div class="content">
+                <!-- Welcome Section -->
+                <div id="welcome-section" class="section">
+                    <div class="welcome-message">
+                        <h2>Willkommen beim Angebotsmanager!</h2>
+                        <p id="personal-welcome"></p>
+                    </div>
+                    <div class="card">
+                        <h3><i class="fas fa-history"></i> Letzte Aktivitäten</h3>
+                        <div id="recent-activities">Lade Aktivitäten...</div>
+                    </div>
+                </div>
+
+                <!-- Offers Overview -->
+                <div id="overview-section" class="section" style="display: none;">
+                    <h2><i class="fas fa-list"></i> Angebotsübersicht</h2>
+                    <div class="card">
+                        <div class="form-group">
+                            <label for="filter-season"><i class="fas fa-filter"></i> Ferienfilter:</label>
+                            <select id="filter-season" class="form-control" onchange="filterOffers()">
+                                <option value="">Alle anzeigen</option>
+                                <option value="Fasnacht">Fasnacht</option>
+                                <option value="Ostern">Ostern</option>
+                                <option value="Pfingsten">Pfingsten</option>
+                                <option value="Sommer">Sommer</option>
+                                <option value="Herbst">Herbst</option>
+                                <option value="Alle">Alle Ferien</option>
+                            </select>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="offers-table">
+                                <thead>
+                                    <tr>
+                                        <th>Angebotsname</th>
+                                        <th>Beschreibung</th>
+                                        <th>Ferien</th>
+                                        <th>Erstellt am</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Angebote werden hier eingefügt -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3><i class="fas fa-info-circle"></i> Anleitungsdetails</h3>
+                        <div id="offer-details"></div>
+                    </div>
+                </div>
+
+                <!-- New Offer Form -->
+                <div id="new-offer-section" class="section" style="display: none;">
+                    <h2><i class="fas fa-plus-circle"></i> Neues Angebot erstellen</h2>
+                    <div class="card">
+                        <div id="offer-alert" class="alert" style="display: none;"></div>
+                        <form id="offer-form">
+                            <div class="form-group">
+                                <label for="offer-name"><i class="fas fa-tag"></i> Angebotsname:</label>
+                                <input type="text" id="offer-name" class="form-control" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="offer-desc"><i class="fas fa-align-left"></i> Kurze Beschreibung:</label>
+                                <input type="text" id="offer-desc" class="form-control" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="offer-guide"><i class="fas fa-file-alt"></i> Lange Anleitung:</label>
+                                <textarea id="offer-guide" class="form-control" required rows="5"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label><i class="fas fa-calendar-alt"></i> Ferienauswahl:</label>
+                                <div class="multi-select-container">
+                                    <div class="multi-select" onclick="toggleOptions()">
+                                        <div id="selected-tags"></div>
+                                        <span style="color: #777">Wählen Sie Ferien aus...</span>
+                                    </div>
+                                    <div class="multi-select-options" id="options-container">
+                                        <label class="multi-select-option">
+                                            <input type="checkbox" value="Fasnacht"> Fasnacht
+                                        </label>
+                                        <label class="multi-select-option">
+                                            <input type="checkbox" value="Ostern"> Ostern
+                                        </label>
+                                        <label class="multi-select-option">
+                                            <input type="checkbox" value="Pfingsten"> Pfingsten
+                                        </label>
+                                        <label class="multi-select-option">
+                                            <input type="checkbox" value="Sommer"> Sommer
+                                        </label>
+                                        <label class="multi-select-option">
+                                            <input type="checkbox" value="Herbst"> Herbst
+                                        </label>
+                                        <label class="multi-select-option">
+                                            <input type="checkbox" value="Alle" onclick="selectAllSeasons(this)"> Alle Ferien
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Angebot speichern
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -242,22 +532,95 @@
         const db = firebase.firestore();
 
         // DOM Elemente
+        const loginContainer = document.getElementById('login-container');
+        const appContent = document.getElementById('app-content');
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
         const loginAlert = document.getElementById('login-alert');
         const loginBtn = document.getElementById('login-btn');
         const registerBtn = document.getElementById('register-btn');
 
-        // Event Listener
-        loginBtn.addEventListener('click', login);
-        registerBtn.addEventListener('click', register);
+        // Initialisierung
+        document.addEventListener('DOMContentLoaded', () => {
+            // Verstecke alles zunächst
+            loginContainer.style.display = 'none';
+            appContent.style.display = 'none';
+            
+            // Auth State Observer
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    // User ist angemeldet
+                    console.log('User angemeldet:', user.email);
+                    loadUserData(user);
+                    showAppContent();
+                } else {
+                    // User ist abgemeldet
+                    console.log('Kein User angemeldet');
+                    showLoginScreen();
+                }
+                
+                // Seite einblenden
+                document.body.classList.add('loaded');
+            });
+            
+            // Event Listener
+            loginBtn.addEventListener('click', login);
+            registerBtn.addEventListener('click', register);
+            
+            // Formularverarbeitung
+            document.getElementById('offer-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveOffer();
+            });
+        });
 
-        // Anmeldefunktion
+        function loadUserData(user) {
+            return db.collection('artifacts/verkaufssoftware/users').doc(user.uid).get()
+                .then(doc => {
+                    if (doc.exists) {
+                        const userData = doc.data();
+                        document.getElementById('user-email').textContent = user.email;
+                        document.getElementById('personal-welcome').textContent = `Hallo ${userData.name}, willkommen zurück!`;
+                        document.getElementById('user-avatar').textContent = userData.name.charAt(0).toUpperCase();
+                        return userData;
+                    }
+                    return null;
+                })
+                .catch(error => {
+                    console.error('Fehler beim Laden der Benutzerdaten:', error);
+                    return null;
+                });
+        }
+
+        function showAppContent() {
+            loginContainer.style.display = 'none';
+            appContent.style.display = 'block';
+            loadRecentActivities();
+            loadOffers();
+        }
+
+        function showLoginScreen() {
+            loginContainer.style.display = 'flex';
+            appContent.style.display = 'none';
+            showLoginForm();
+        }
+
+        function showLoginForm() {
+            loginForm.style.display = 'block';
+            registerForm.style.display = 'none';
+            loginAlert.style.display = 'none';
+        }
+
+        function showRegisterForm() {
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+            loginAlert.style.display = 'none';
+        }
+
         function login() {
             const email = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value.trim();
 
-            // Validierung
             if (!email || !password) {
                 showAlert(loginAlert, 'Bitte geben Sie E-Mail und Passwort ein!', 'error');
                 return;
@@ -265,31 +628,21 @@
 
             showAlert(loginAlert, 'Anmeldung läuft...', 'success');
 
-            // Firebase Anmeldung
             auth.signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Erfolgreich angemeldet
+                .then(() => {
                     showAlert(loginAlert, 'Anmeldung erfolgreich!', 'success');
-                    console.log('Erfolgreich angemeldet:', userCredential.user.email);
-                    
-                    // Hier können Sie zur App weiterleiten
-                    document.getElementById('login-container').style.display = 'none';
-                    document.getElementById('app-content').style.display = 'block';
                 })
                 .catch((error) => {
                     showAlert(loginAlert, getAuthErrorMessage(error), 'error');
-                    console.error('Anmeldefehler:', error);
                 });
         }
 
-        // Registrierungsfunktion
         function register() {
             const name = document.getElementById('register-name').value.trim();
             const email = document.getElementById('register-email').value.trim();
             const password = document.getElementById('register-password').value.trim();
             const confirm = document.getElementById('register-confirm').value.trim();
 
-            // Validierung
             if (!name || !email || !password || !confirm) {
                 showAlert(loginAlert, 'Bitte füllen Sie alle Felder aus!', 'error');
                 return;
@@ -307,14 +660,9 @@
 
             showAlert(loginAlert, 'Registrierung läuft...', 'success');
 
-            // Firebase Registrierung
             auth.createUserWithEmailAndPassword(email, password)
                 .then((userCredential) => {
-                    // Benutzer erfolgreich registriert
-                    const user = userCredential.user;
-                    
-                    // Zusätzliche Benutzerdaten in Firestore speichern
-                    return db.collection('artifacts/verkaufssoftware/users').doc(user.uid).set({
+                    return db.collection('artifacts/verkaufssoftware/users').doc(userCredential.user.uid).set({
                         name: name,
                         email: email,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -322,37 +670,149 @@
                 })
                 .then(() => {
                     showAlert(loginAlert, 'Registrierung erfolgreich! Sie werden angemeldet...', 'success');
-                    // Automatische Anmeldung nach Registrierung
                     return auth.signInWithEmailAndPassword(email, password);
-                })
-                .then(() => {
-                    // Zurück zum Login-Formular nach erfolgreicher Registrierung
-                    showLoginForm();
                 })
                 .catch((error) => {
                     showAlert(loginAlert, getAuthErrorMessage(error), 'error');
-                    console.error('Registrierungsfehler:', error);
                 });
         }
 
-        function showLoginForm() {
-            loginForm.style.display = 'block';
-            registerForm.style.display = 'none';
-            loginAlert.style.display = 'none';
-            // Formular zurücksetzen
-            document.getElementById('login-email').value = '';
-            document.getElementById('login-password').value = '';
+        function logout() {
+            auth.signOut().catch(error => {
+                console.error('Abmeldefehler:', error);
+            });
         }
 
-        function showRegisterForm() {
-            loginForm.style.display = 'none';
-            registerForm.style.display = 'block';
-            loginAlert.style.display = 'none';
-            // Formular zurücksetzen
-            document.getElementById('register-name').value = '';
-            document.getElementById('register-email').value = '';
-            document.getElementById('register-password').value = '';
-            document.getElementById('register-confirm').value = '';
+        function loadOffers() {
+            const tbody = document.querySelector('#offers-table tbody');
+            tbody.innerHTML = '';
+
+            db.collection('artifacts/verkaufssoftware/public/data')
+                .orderBy('createdAt', 'desc')
+                .get()
+                .then(querySnapshot => {
+                    querySnapshot.forEach(doc => {
+                        const offer = doc.data();
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${offer.name}</td>
+                            <td>${offer.description}</td>
+                            <td>${offer.seasons.join(', ')}</td>
+                            <td>${offer.createdAt?.toDate().toLocaleString() || ''}</td>
+                        `;
+                        row.addEventListener('click', () => showOfferDetails(offer));
+                        tbody.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('Fehler beim Laden der Angebote:', error);
+                });
+        }
+
+        function loadRecentActivities() {
+            const activitiesDiv = document.getElementById('recent-activities');
+            
+            db.collection('artifacts/verkaufssoftware/public/data')
+                .orderBy('createdAt', 'desc')
+                .limit(3)
+                .get()
+                .then(querySnapshot => {
+                    let html = '<ul style="list-style-type:none;padding:0;">';
+                    querySnapshot.forEach(doc => {
+                        const offer = doc.data();
+                        html += `
+                            <li style="padding:8px 0;border-bottom:1px solid #eee;">
+                                <strong>${offer.name}</strong><br>
+                                <small>${offer.createdAt?.toDate().toLocaleString() || ''}</small>
+                            </li>
+                        `;
+                    });
+                    html += '</ul>';
+                    activitiesDiv.innerHTML = html;
+                })
+                .catch(error => {
+                    activitiesDiv.innerHTML = 'Fehler beim Laden der Aktivitäten';
+                    console.error('Fehler beim Laden der Aktivitäten:', error);
+                });
+        }
+
+        function showOfferDetails(offer) {
+            const detailsDiv = document.getElementById('offer-details');
+            detailsDiv.innerHTML = `
+                <h4>${offer.name}</h4>
+                <p><strong>Ferien:</strong> ${offer.seasons.join(', ')}</p>
+                <p><strong>Erstellt am:</strong> ${offer.createdAt?.toDate().toLocaleString() || ''}</p>
+                <h5>Anleitung:</h5>
+                <pre style="white-space:pre-wrap;background:#f5f5f5;padding:10px;border-radius:4px;">${offer.guide}</pre>
+            `;
+        }
+
+        function filterOffers() {
+            const filterValue = document.getElementById('filter-season').value;
+            const rows = document.querySelectorAll('#offers-table tbody tr');
+            
+            rows.forEach(row => {
+                const seasons = row.cells[2].textContent.split(', ');
+                const showRow = !filterValue || 
+                               filterValue === 'Alle' && seasons.includes('Alle') ||
+                               seasons.includes(filterValue) || 
+                               seasons.includes('Alle');
+                row.style.display = showRow ? '' : 'none';
+            });
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(`${sectionId}-section`).style.display = 'block';
+            
+            document.querySelectorAll('.sidebar-menu li').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`.sidebar-menu li[onclick="showSection('${sectionId}')"]`).classList.add('active');
+        }
+
+        function toggleOptions() {
+            document.getElementById('options-container').classList.toggle('show');
+        }
+
+        function selectAllSeasons(checkbox) {
+            const options = document.querySelectorAll('#options-container input[type="checkbox"]:not([value="Alle"])');
+            options.forEach(opt => {
+                opt.checked = checkbox.checked;
+            });
+            updateSelectedTags();
+        }
+
+        function updateSelectedTags() {
+            const selected = document.querySelectorAll('#options-container input[type="checkbox"]:checked:not([value="Alle"])');
+            const tagsContainer = document.getElementById('selected-tags');
+            tagsContainer.innerHTML = '';
+            
+            if (selected.length === 0) {
+                tagsContainer.innerHTML = '<span style="color:#777">Wählen Sie Ferien aus...</span>';
+                return;
+            }
+            
+            selected.forEach(checkbox => {
+                const tag = document.createElement('div');
+                tag.className = 'selected-tag';
+                tag.innerHTML = `
+                    ${checkbox.value}
+                    <button type="button" onclick="unselectSeason('${checkbox.value}')">&times;</button>
+                `;
+                tagsContainer.appendChild(tag);
+            });
+        }
+
+        function unselectSeason(value) {
+            const checkbox = document.querySelector(`#options-container input[value="${value}"]`);
+            if (checkbox) {
+                checkbox.checked = false;
+                updateSelectedTags();
+            }
+            event.stopPropagation();
         }
 
         function showAlert(element, message, type) {
@@ -360,7 +820,6 @@
             element.className = `alert alert-${type}`;
             element.style.display = 'block';
             
-            // Nach 5 Sekunden ausblenden
             setTimeout(() => {
                 element.style.display = 'none';
             }, 5000);
@@ -382,22 +841,6 @@
                     return error.message || 'Ein Fehler ist aufgetreten.';
             }
         }
-
-        // Firebase Auth State Observer
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                // User ist angemeldet
-                console.log('User angemeldet:', user.email);
-                // Hier können Sie zur App weiterleiten
-                document.getElementById('login-container').style.display = 'none';
-                document.getElementById('app-content').style.display = 'block';
-            } else {
-                // User ist abgemeldet
-                console.log('Kein User angemeldet');
-                document.getElementById('login-container').style.display = 'flex';
-                document.getElementById('app-content').style.display = 'none';
-            }
-        });
     </script>
 </body>
 </html>
