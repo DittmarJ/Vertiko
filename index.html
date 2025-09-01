@@ -3,1028 +3,443 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Angebotsmanager</title>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Mehrsprachiger Bingo-Anrufer</title>
     <style>
-        :root {
-            --primary: #4361ee;
-            --primary-dark: #3a56d4;
-            --secondary: #3f37c9;
-            --success: #4cc9f0;
-            --danger: #f72585;
-            --light: #f8f9fa;
-            --dark: #212529;
-            --gray: #6c757d;
-            --white: #ffffff;
-            --sidebar-width: 280px;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
         body {
-            background-color: #f5f7fa;
-            color: var(--dark);
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            padding: 20px;
         }
-
-        /* Loading Overlay */
-        .loading-overlay {
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .main-controls {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+        .settings-button {
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            margin-bottom: 20px;
+        }
+        #status-message {
+            color: #888;
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+        .settings-modal {
+            display: none; /* Standardmäßig ausgeblendet */
             position: fixed;
-            top: 0;
+            z-index: 1000;
             left: 0;
+            top: 0;
             width: 100%;
             height: 100%;
-            background-color: #f5f7fa;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            justify-content: center;
+            align-items: center;
+        }
+        .settings-modal.show {
             display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.3s ease;
         }
-
-        .loading-spinner {
-            border: 4px solid rgba(67, 97, 238, 0.2);
-            border-radius: 50%;
-            border-top: 4px solid var(--primary);
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
+        .modal-content {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
         }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Login Container */
-        .login-container {
-            display: none;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .login-box {
-            background: var(--white);
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            padding: 2.5rem;
-            width: 100%;
-            max-width: 450px;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .login-box h2 {
-            color: var(--primary);
-            text-align: center;
-            margin-bottom: 1.5rem;
-            font-weight: 600;
-        }
-
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--gray);
-            font-weight: 500;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 1px solid #e1e5ee;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.3s;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 500;
-            text-align: center;
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #aaa;
             cursor: pointer;
-            transition: all 0.3s;
+        }
+        .close-button:hover {
+            color: #333;
+        }
+        .settings-option {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .settings-option:last-child {
+            border-bottom: none;
+        }
+        .settings-option h3 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+        .settings-option label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+        .settings-option input[type="checkbox"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+        }
+        .settings-option select {
+            margin-left: 28px;
+            width: calc(100% - 28px);
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .save-button {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
             border: none;
-            font-size: 1rem;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
-
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
+        .save-button:hover {
+            background-color: #0056b3;
         }
-
-        .btn-primary:hover {
-            background-color: var(--primary-dark);
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background-color: var(--light);
-            color: var(--dark);
-        }
-
-        .btn-secondary:hover {
-            background-color: #e9ecef;
-        }
-
-        .btn-block {
-            display: block;
-            width: 100%;
-        }
-
-        .alert {
-            padding: 1rem;
+        .container {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 10px;
+            max-width: 800px;
+            background-color: #ffffff;
+            padding: 20px;
             border-radius: 8px;
-            margin-bottom: 1.5rem;
-            display: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-
-        .alert-error {
-            background-color: #fde8e8;
-            color: var(--danger);
-            border: 1px solid #fbc4c4;
-        }
-
-        .alert-success {
-            background-color: #e6f7f0;
-            color: #0c9363;
-            border: 1px solid #b8ebd6;
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
-        .mt-3 {
-            margin-top: 1rem;
-        }
-
-        /* App Layout */
-        #app-content {
-            display: none;
-            min-height: 100vh;
-        }
-
-        .sidebar {
-            width: var(--sidebar-width);
-            background-color: var(--white);
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
-            position: fixed;
-            height: 100vh;
-            padding: 1.5rem 0;
-            z-index: 100;
-        }
-
-        .sidebar-header {
-            padding: 0 1.5rem 1.5rem;
-            border-bottom: 1px solid #f0f0f0;
-            margin-bottom: 1rem;
-        }
-
-        .sidebar-header h3 {
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        .sidebar-menu {
-            list-style: none;
-        }
-
-        .sidebar-menu li {
-            padding: 0.75rem 1.5rem;
+        .number-button {
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            font-weight: bold;
+            border: 2px solid #007BFF;
+            border-radius: 8px;
+            background-color: #E6F3FF;
+            color: #007BFF;
             cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
+            transition: background-color 0.2s, transform 0.1s;
         }
-
-        .sidebar-menu li i {
-            margin-right: 0.75rem;
-            width: 20px;
-            text-align: center;
+        .number-button:hover {
+            background-color: #007BFF;
+            color: #fff;
         }
-
-        .sidebar-menu li:hover {
-            background-color: #f8f9fa;
-            color: var(--primary);
+        .number-button:active {
+            transform: scale(0.95);
         }
-
-        .sidebar-menu li.active {
-            background-color: rgba(67, 97, 238, 0.1);
-            color: var(--primary);
-            font-weight: 500;
-        }
-
-        .main-content {
-            margin-left: var(--sidebar-width);
-        }
-
-        .navbar {
-            background-color: var(--white);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background-color: var(--primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 500;
-        }
-
-        .logout-btn {
-            background: none;
-            border: none;
-            color: var(--gray);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .logout-btn:hover {
-            color: var(--danger);
-        }
-
-        .content {
-            padding: 2rem;
-        }
-
-        /* Welcome Section */
-        .welcome-message {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            padding: 2rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-
-        .welcome-message h2 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .card {
-            background-color: var(--white);
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .card h3 {
-            margin-bottom: 1rem;
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        /* Responsive */
-        @media (max-width: 992px) {
-            .sidebar {
-                transform: translateX(-100%);
+        /* Responsives Layout für kleinere Bildschirme */
+        @media (max-width: 600px) {
+            .container {
+                grid-template-columns: repeat(5, 1fr);
             }
-            
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            
-            .main-content {
-                margin-left: 0;
+            .number-button {
+                width: 50px;
+                height: 50px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loading-overlay">
-        <div class="loading-spinner"></div>
+
+    <div class="main-controls">
+        <button class="settings-button" id="settingsButton">Einstellungen</button>
     </div>
 
-    <!-- Login Screen -->
-    <div id="login-container" class="login-container">
-        <div class="login-box">
-            <h2><i class="fas fa-store-alt"></i> Angebotsmanager</h2>
-            <div id="login-alert" class="alert alert-error"></div>
-            
-            <div id="login-form">
-                <div class="form-group">
-                    <label for="login-email"><i class="fas fa-envelope"></i> E-Mail:</label>
-                    <input type="email" id="login-email" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="login-password"><i class="fas fa-lock"></i> Passwort:</label>
-                    <input type="password" id="login-password" class="form-control" required>
-                </div>
-                <button type="button" id="login-btn" class="btn btn-primary btn-block">
-                    <i class="fas fa-sign-in-alt"></i> Anmelden
-                </button>
-                <div class="text-center mt-3">
-                    <button type="button" onclick="showRegisterForm()" class="btn btn-secondary">
-                        <i class="fas fa-user-plus"></i> Registrieren
-                    </button>
-                </div>
-            </div>
-            
-            <div id="register-form" style="display: none;">
-                <div class="form-group">
-                    <label for="register-name"><i class="fas fa-user"></i> Name:</label>
-                    <input type="text" id="register-name" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="register-email"><i class="fas fa-envelope"></i> E-Mail:</label>
-                    <input type="email" id="register-email" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="register-password"><i class="fas fa-lock"></i> Passwort (min. 6 Zeichen):</label>
-                    <input type="password" id="register-password" class="form-control" minlength="6" required>
-                </div>
-                <div class="form-group">
-                    <label for="register-confirm"><i class="fas fa-lock"></i> Passwort bestätigen:</label>
-                    <input type="password" id="register-confirm" class="form-control" minlength="6" required>
-                </div>
-                <button type="button" id="register-btn" class="btn btn-primary btn-block">
-                    <i class="fas fa-user-plus"></i> Registrieren
-                </button>
-                <div class="text-center mt-3">
-                    <button type="button" onclick="showLoginForm()" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Zurück zur Anmeldung
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <p id="status-message">Stimmen werden geladen...</p>
+    <h1>Klicken Sie auf eine Zahl</h1>
+    <div class="container" id="button-container"></div>
 
-    <!-- App Content -->
-    <div id="app-content">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h3><i class="fas fa-store-alt"></i> Angebotsmanager</h3>
-                <p id="user-email"></p>
-            </div>
-            <ul class="sidebar-menu">
-                <li class="active" onclick="showSection('welcome')">
-                    <i class="fas fa-home"></i> Willkommen
-                </li>
-                <li onclick="showSection('overview')">
-                    <i class="fas fa-list"></i> Angebotsübersicht
-                </li>
-                <li onclick="showSection('new-offer')">
-                    <i class="fas fa-plus-circle"></i> Neues Angebot
-                </li>
-            </ul>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Navbar -->
-            <div class="navbar">
-                <div class="user-info">
-                    <div class="user-avatar" id="user-avatar"></div>
-                    <button class="logout-btn" onclick="logout()">
-                        <i class="fas fa-sign-out-alt"></i> Abmelden
-                    </button>
+    <div id="settingsModal" class="settings-modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeModal">&times;</span>
+            <h2>Einstellungen</h2>
+            <div id="language-settings-container">
                 </div>
-            </div>
-
-            <!-- Content Sections -->
-            <div class="content">
-                <!-- Welcome Section -->
-                <div id="welcome-section" class="section">
-                    <div class="welcome-message">
-                        <h2>Willkommen beim Angebotsmanager!</h2>
-                        <p id="personal-welcome"></p>
-                    </div>
-                    <div class="card">
-                        <h3><i class="fas fa-history"></i> Letzte Aktivitäten</h3>
-                        <div id="recent-activities">Lade Aktivitäten...</div>
-                    </div>
-                </div>
-
-                <!-- Offers Overview -->
-                <div id="overview-section" class="section" style="display: none;">
-                    <h2><i class="fas fa-list"></i> Angebotsübersicht</h2>
-                    <div class="card">
-                        <div class="form-group">
-                            <label for="filter-season"><i class="fas fa-filter"></i> Ferienfilter:</label>
-                            <select id="filter-season" class="form-control" onchange="filterOffers()">
-                                <option value="">Alle anzeigen</option>
-                                <option value="Fasnacht">Fasnacht</option>
-                                <option value="Ostern">Ostern</option>
-                                <option value="Pfingsten">Pfingsten</option>
-                                <option value="Sommer">Sommer</option>
-                                <option value="Herbst">Herbst</option>
-                                <option value="Alle">Alle Ferien</option>
-                            </select>
-                        </div>
-                        <div class="table-responsive">
-                            <table id="offers-table">
-                                <thead>
-                                    <tr>
-                                        <th>Angebotsname</th>
-                                        <th>Beschreibung</th>
-                                        <th>Ferien</th>
-                                        <th>Erstellt am</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Angebote werden hier eingefügt -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    
-                    <div class="card">
-                        <h3><i class="fas fa-info-circle"></i> Anleitungsdetails</h3>
-                        <div id="offer-details"></div>
-                    </div>
-                </div>
-
-                <!-- New Offer Form -->
-                <div id="new-offer-section" class="section" style="display: none;">
-                    <h2><i class="fas fa-plus-circle"></i> Neues Angebot erstellen</h2>
-                    <div class="card">
-                        <div id="offer-alert" class="alert" style="display: none;"></div>
-                        <form id="offer-form">
-                            <div class="form-group">
-                                <label for="offer-name"><i class="fas fa-tag"></i> Angebotsname:</label>
-                                <input type="text" id="offer-name" class="form-control" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="offer-desc"><i class="fas fa-align-left"></i> Kurze Beschreibung:</label>
-                                <input type="text" id="offer-desc" class="form-control" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="offer-guide"><i class="fas fa-file-alt"></i> Lange Anleitung:</label>
-                                <textarea id="offer-guide" class="form-control" required rows="5"></textarea>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label><i class="fas fa-calendar-alt"></i> Ferienauswahl:</label>
-                                <div class="multi-select-container">
-                                    <div class="multi-select" onclick="toggleOptions()">
-                                        <div id="selected-tags"></div>
-                                        <span style="color: #777">Wählen Sie Ferien aus...</span>
-                                    </div>
-                                    <div class="multi-select-options" id="options-container">
-                                        <label class="multi-select-option">
-                                            <input type="checkbox" value="Fasnacht"> Fasnacht
-                                        </label>
-                                        <label class="multi-select-option">
-                                            <input type="checkbox" value="Ostern"> Ostern
-                                        </label>
-                                        <label class="multi-select-option">
-                                            <input type="checkbox" value="Pfingsten"> Pfingsten
-                                        </label>
-                                        <label class="multi-select-option">
-                                            <input type="checkbox" value="Sommer"> Sommer
-                                        </label>
-                                        <label class="multi-select-option">
-                                            <input type="checkbox" value="Herbst"> Herbst
-                                        </label>
-                                        <label class="multi-select-option">
-                                            <input type="checkbox" value="Alle" onclick="selectAllSeasons(this)"> Alle Ferien
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Angebot speichern
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
+            <button class="save-button" id="saveSettingsButton">Einstellungen speichern</button>
         </div>
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('button-container');
+            const settingsButton = document.getElementById('settingsButton');
+            const settingsModal = document.getElementById('settingsModal');
+            const closeModalButton = document.getElementById('closeModal');
+            const saveSettingsButton = document.getElementById('saveSettingsButton');
+            const langSettingsContainer = document.getElementById('language-settings-container');
+            const statusMessage = document.getElementById('status-message');
+            
+            let availableVoices = [];
+            let userSettings = {
+                languages: ['de'],
+                voices: { 'de': null, 'en': null, 'es': null, 'fr': null }
+            };
+            
+            const languageData = {
+                de: { prefix: 'Nummer', langCode: 'de-DE', name: 'Deutsch' },
+                en: { prefix: 'Number', langCode: 'en-US', name: 'Englisch' },
+                es: { prefix: 'Número', langCode: 'es-ES', name: 'Spanisch' },
+                fr: { prefix: 'Numéro', langCode: 'fr-FR', name: 'Französisch' }
+            };
 
-        // Firebase-Konfiguration
-        const firebaseConfig = {
-            apiKey: "AIzaSyAyO_3QNTZq2IOdvBMm6ZLHYFv96H9F50I",
-            authDomain: "verkaufssoftware.firebaseapp.com",
-            projectId: "verkaufssoftware",
-            storageBucket: "verkaufssoftware.appspot.com",
-            messagingSenderId: "268747007466",
-            appId: "1:268747007466:web:c84a529f27a0f6849a3e93",
-            measurementId: "G-RMX5KJK543"
-        };
-        
-        // Firebase initialisieren
-        let app, auth, db;
-        
-        try {
-            app = firebase.initializeApp(firebaseConfig);
-            auth = firebase.auth();
-            db = firebase.firestore();
-            console.log("Firebase erfolgreich initialisiert");
-            
-            // Spracheinstellungen übernehmen
-            auth.useDeviceLanguage();
-            
-            // Verbindungsstatus überprüfen
-            if (firebase.database) {
-                firebase.database().ref('.info/connected').on('value', (snapshot) => {
-                    if (snapshot.val() === true) {
-                        console.log("Mit Firebase verbunden");
-                    } else {
-                        console.warn("Keine Verbindung zu Firebase");
-                        showConnectionError();
-                    }
-                });
+            const numberData = {
+                1: { de: 'eins', en: 'one', es: 'uno', fr: 'un' },
+                2: { de: 'zwei', en: 'two', es: 'dos', fr: 'deux' },
+                3: { de: 'drei', en: 'three', es: 'tres', fr: 'trois' },
+                4: { de: 'vier', en: 'four', es: 'cuatro', fr: 'quatre' },
+                5: { de: 'fünf', en: 'five', es: 'cinco', fr: 'cinq' },
+                6: { de: 'sechs', en: 'six', es: 'seis', fr: 'six' },
+                7: { de: 'sieben', en: 'seven', es: 'siete', fr: 'sept' },
+                8: { de: 'acht', en: 'eight', es: 'ocho', fr: 'huit' },
+                9: { de: 'neun', en: 'nine', es: 'nueve', fr: 'neuf' },
+                10: { de: 'zehn', en: 'ten', es: 'diez', fr: 'dix' },
+                11: { de: 'elf', en: 'eleven', es: 'once', fr: 'onze' },
+                12: { de: 'zwölf', en: 'twelve', es: 'doce', fr: 'douze' },
+                13: { de: 'dreizehn', en: 'thirteen', es: 'trece', fr: 'treize' },
+                14: { de: 'vierzehn', en: 'fourteen', es: 'catorce', fr: 'quatorze' },
+                15: { de: 'fünfzehn', en: 'fifteen', es: 'quince', fr: 'quinze' },
+                16: { de: 'sechzehn', en: 'sixteen', es: 'dieciséis', fr: 'seize' },
+                17: { de: 'siebzehn', en: 'seventeen', es: 'diecisiete', fr: 'dix-sept' },
+                18: { de: 'achtzehn', en: 'eighteen', es: 'dieciocho', fr: 'dix-huit' },
+                19: { de: 'neunzehn', en: 'nineteen', es: 'diecinueve', fr: 'dix-neuf' },
+                20: { de: 'zwanzig', en: 'twenty', es: 'veinte', fr: 'vingt' },
+                21: { de: 'einundzwanzig', en: 'twenty-one', es: 'veintiuno', fr: 'vingt et un' },
+                22: { de: 'zweiundzwanzig', en: 'twenty-two', es: 'veintidós', fr: 'vingt-deux' },
+                23: { de: 'dreiundzwanzig', en: 'twenty-three', es: 'veintitrés', fr: 'vingt-trois' },
+                24: { de: 'vierundzwanzig', en: 'twenty-four', es: 'veinticuatro', fr: 'vingt-quatre' },
+                25: { de: 'fünfundzwanzig', en: 'twenty-five', es: 'veinticinco', fr: 'vingt-cinq' },
+                26: { de: 'sechsundzwanzig', en: 'twenty-six', es: 'veintiséis', fr: 'vingt-six' },
+                27: { de: 'siebenundzwanzig', en: 'twenty-seven', es: 'veintisiete', fr: 'vingt-sept' },
+                28: { de: 'achtundzwanzig', en: 'twenty-eight', es: 'veintiocho', fr: 'vingt-huit' },
+                29: { de: 'neunundzwanzig', en: 'twenty-nine', es: 'veintinueve', fr: 'vingt-neuf' },
+                30: { de: 'dreißig', en: 'thirty', es: 'treinta', fr: 'trente' },
+                31: { de: 'einunddreißig', en: 'thirty-one', es: 'treinta y uno', fr: 'trente et un' },
+                32: { de: 'zweiunddreißig', en: 'thirty-two', es: 'treinta y dos', fr: 'trente-deux' },
+                33: { de: 'dreiunddreißig', en: 'thirty-three', es: 'treinta y tres', fr: 'trente-trois' },
+                34: { de: 'vierunddreißig', en: 'thirty-four', es: 'treinta y cuatro', fr: 'trente-quatre' },
+                35: { de: 'fünfunddreißig', en: 'thirty-five', es: 'treinta y cinco', fr: 'trente-cinq' },
+                36: { de: 'sechsunddreißig', en: 'thirty-six', es: 'treinta y seis', fr: 'trente-six' },
+                37: { de: 'siebenunddreißig', en: 'thirty-seven', es: 'treinta y sieben', fr: 'trente-sept' },
+                38: { de: 'achtunddreißig', en: 'thirty-eight', es: 'treinta y ocho', fr: 'trente-huit' },
+                39: { de: 'neununddreißig', en: 'thirty-nine', es: 'treinta y neun', fr: 'trente-neuf' },
+                40: { de: 'vierzig', en: 'forty', es: 'cuarenta', fr: 'quarante' },
+                41: { de: 'einundvierzig', en: 'forty-one', es: 'cuarenta y uno', fr: 'quarante et un' },
+                42: { de: 'zweiundvierzig', en: 'forty-two', es: 'cuarenta y dos', fr: 'quarante-deux' },
+                43: { de: 'dreiundvierzig', en: 'forty-three', es: 'cuarenta y drei', fr: 'quarante-trois' },
+                44: { de: 'vierundvierzig', en: 'forty-four', es: 'cuarenta y vier', fr: 'quarante-quatre' },
+                45: { de: 'fünfundvierzig', en: 'forty-five', es: 'cuarenta y cinco', fr: 'quarante-cinq' },
+                46: { de: 'sechsundvierzig', en: 'forty-six', es: 'cuarenta y sechs', fr: 'quarante-six' },
+                47: { de: 'siebenundvierzig', en: 'forty-seven', es: 'cuarenta y sieben', fr: 'quarante-sept' },
+                48: { de: 'achtundvierzig', en: 'forty-eight', es: 'cuarenta y acht', fr: 'quarante-huit' },
+                49: { de: 'neunundvierzig', en: 'forty-nine', es: 'cuarenta y neun', fr: 'quarante-neuf' },
+                50: { de: 'fünfzig', en: 'fifty', es: 'cincuenta', fr: 'cinquante' },
+                51: { de: 'einundfünfzig', en: 'fifty-one', es: 'cincuenta y uno', fr: 'cinquante et un' },
+                52: { de: 'zweiundfünfzig', en: 'fifty-two', es: 'cincuenta y dos', fr: 'cinquante-deux' },
+                53: { de: 'dreiundfünfzig', en: 'fifty-three', es: 'cincuenta y drei', fr: 'cinquante-trois' },
+                54: { de: 'vierundfünfzig', en: 'fifty-four', es: 'cincuenta y vier', fr: 'cinquante-quatre' },
+                55: { de: 'fünfundfünfzig', en: 'fifty-five', es: 'cincuenta y cinco', fr: 'cinquante-cinq' },
+                56: { de: 'sechsundfünfzig', en: 'fifty-six', es: 'cincuenta y sechs', fr: 'cinquante-six' },
+                57: { de: 'siebenundfünfzig', en: 'fifty-seven', es: 'cincuenta y sieben', fr: 'cinquante-sept' },
+                58: { de: 'achtundfünfzig', en: 'fifty-eight', es: 'cincuenta y acht', fr: 'cinquante-huit' },
+                59: { de: 'neunundfünfzig', en: 'fifty-nine', es: 'cincuenta y neun', fr: 'cinquante-neuf' },
+                60: { de: 'sechzig', en: 'sixty', es: 'sesenta', fr: 'soixante' },
+                61: { de: 'einundsechzig', en: 'sixty-one', es: 'sesenta y uno', fr: 'soixante et un' },
+                62: { de: 'zweiundsechzig', en: 'sixty-two', es: 'sesenta y dos', fr: 'soixante-deux' },
+                63: { de: 'dreiundsechzig', en: 'sixty-three', es: 'sesenta y drei', fr: 'soixante-trois' },
+                64: { de: 'vierundsechzig', en: 'sixty-four', es: 'sesenta y vier', fr: 'soixante-quatre' },
+                65: { de: 'fünfundsechzig', en: 'sixty-five', es: 'sesenta y cinco', fr: 'soixante-cinq' },
+                66: { de: 'sechsundsechzig', en: 'sixty-six', es: 'sesenta y sechs', fr: 'soixante-six' },
+                67: { de: 'siebenundsechzig', en: 'sixty-seven', es: 'sesenta y sieben', fr: 'soixante-sept' },
+                68: { de: 'achtundsechzig', en: 'sixty-eight', es: 'sesenta y acht', fr: 'soixante-huit' },
+                69: { de: 'neunundsechzig', en: 'sixty-nine', es: 'sesenta y neun', fr: 'soixante-neuf' },
+                70: { de: 'siebzig', en: 'seventy', es: 'setenta', fr: 'soixante-dix' },
+                71: { de: 'einundsiebzig', en: 'seventy-one', es: 'setenta y uno', fr: 'soixante et onze' },
+                72: { de: 'zweiundsiebzig', en: 'seventy-two', es: 'setenta y dos', fr: 'soixante-douze' },
+                73: { de: 'dreiundsiebzig', en: 'seventy-three', es: 'setenta y drei', fr: 'soixante-treize' },
+                74: { de: 'vierundsiebzig', en: 'seventy-four', es: 'setenta y vier', fr: 'soixante-quatorze' },
+                75: { de: 'fünfundsiebzig', en: 'seventy-five', es: 'setenta y cinco', fr: 'soixante-quinze' }
+            };
+
+            // Lade die Stimmen, wenn das Dokument fertig ist
+            let availableVoices = [];
+            let userSettings = {
+                languages: ['de'],
+                voices: { 'de': null, 'en': null, 'es': null, 'fr': null }
+            };
+
+            function updateStatus(message, color) {
+                statusMessage.textContent = message;
+                statusMessage.style.color = color;
+                statusMessage.style.display = 'block';
             }
-        } catch (error) {
-            console.error("Firebase Initialisierungsfehler:", error);
-            showInitializationError();
-        }
-        
-        function showConnectionError() {
-            const loadingOverlay = document.getElementById('loading-overlay');
-            loadingOverlay.innerHTML = `
-                <div style="text-align:center;">
-                    <p style="color:red;">Keine Internetverbindung</p>
-                    <p>Bitte überprüfen Sie Ihre Netzwerkverbindung</p>
-                    <button onclick="window.location.reload()" class="btn btn-primary">
-                        Neu laden
-                    </button>
-                </div>
-            `;
-        }
-        
-        function showInitializationError() {
-            const loadingOverlay = document.getElementById('loading-overlay');
-            loadingOverlay.innerHTML = `
-                <div style="text-align:center;">
-                    <p style="color:red;">Initialisierungsfehler</p>
-                    <p>Die Anwendung konnte nicht gestartet werden</p>
-                    <button onclick="window.location.reload()" class="btn btn-primary">
-                        Neu versuchen
-                    </button>
-                </div>
-            `;
-        }
-        
-        function checkAuthInitialization() {
-            if (!auth) {
-                console.error("Authentifizierung nicht initialisiert");
-                document.getElementById('loading-overlay').innerHTML = `
-                    <div style="text-align:center;">
-                        <p style="color:red;">Systemfehler</p>
-                        <p>Authentifizierungssystem nicht verfügbar</p>
-                        <button onclick="window.location.reload()" class="btn btn-primary">
-                            Neu laden
-                        </button>
-                    </div>
-                `;
-                return false;
+
+            function voicesLoaded() {
+                availableVoices = window.speechSynthesis.getVoices();
+                updateStatus('Stimmen geladen.', 'green');
+                setTimeout(() => statusMessage.style.display = 'none', 3000);
+                populateSettingsModal();
+                console.log('Voices loaded successfully.');
             }
-            return true;
-        }
-        
-                // DOM Elemente
-                const loginContainer = document.getElementById('login-container');
-                const appContent = document.getElementById('app-content');
-                const loginForm = document.getElementById('login-form');
-                const registerForm = document.getElementById('register-form');
-                const loginAlert = document.getElementById('login-alert');
-                const loginBtn = document.getElementById('login-btn');
-                const registerBtn = document.getElementById('register-btn');
-                const loadingOverlay = document.getElementById('loading-overlay');
-        
-                // Initialisierung
-                document.addEventListener('DOMContentLoaded', () => {
-                    // Verstecke alles zunächst
-                    loginContainer.style.display = 'none';
-                    appContent.style.display = 'none';
-                    
-                    // Setze ein Timeout als Fallback
-                    const loadingTimeout = setTimeout(() => {
-                        loadingOverlay.style.display = 'none';
-                    }, 5000); // Nach 5 Sekunden auf jeden Fall ausblenden
-        
-        if (firebase.database) {
-            firebase.database().ref('.info/connected').on('value', (snapshot) => {
-                if (snapshot.val() === true) {
-                    console.log("Mit Firebase verbunden");
+
+            if ('speechSynthesis' in window) {
+                // Check if voices are already loaded
+                if (window.speechSynthesis.getVoices().length > 0) {
+                    voicesLoaded();
                 } else {
-                    console.warn("Keine Verbindung zu Firebase");
-                    document.getElementById('loading-overlay').innerHTML = `
-                        <div style="text-align:center;">
-                            <p style="color:red;">Keine Internetverbindung</p>
-                            <p>Bitte überprüfen Sie Ihr Netzwerk</p>
-                        </div>
+                    window.speechSynthesis.onvoiceschanged = voicesLoaded;
+                }
+            } else {
+                updateStatus('Sprachsynthese wird von Ihrem Browser nicht unterstützt.', 'red');
+            }
+
+            // Funktionen zur Anzeige des Modals
+            settingsButton.addEventListener('click', () => {
+                settingsModal.classList.add('show');
+                populateSettingsModal();
+            });
+
+            closeModalButton.addEventListener('click', () => {
+                settingsModal.classList.remove('show');
+            });
+
+            // Funktion, um die Stimmen im Modal zu füllen
+            function populateSettingsModal() {
+                langSettingsContainer.innerHTML = '';
+                const availableVoiceNames = availableVoices.map(v => v.name);
+
+                Object.keys(languageData).forEach(langKey => {
+                    const lang = languageData[langKey];
+                    const settingOption = document.createElement('div');
+                    settingOption.className = 'settings-option';
+
+                    const checkboxId = `lang-checkbox-${langKey}`;
+                    const selectId = `voice-select-${langKey}`;
+                    
+                    const isSelected = userSettings.languages.includes(langKey);
+
+                    settingOption.innerHTML = `
+                        <label for="${checkboxId}">
+                            <input type="checkbox" id="${checkboxId}" data-lang="${langKey}" ${isSelected ? 'checked' : ''}>
+                            <h3>${lang.name}</h3>
+                        </label>
+                        <select id="${selectId}"></select>
                     `;
-                }
-            });
-        }
                     
-        // Timeout für Auth-Status (10 Sekunden)
-        const authTimeout = setTimeout(() => {
-            console.error("Auth-Zeitüberschreitung - keine Antwort von Firebase");
-            document.getElementById('loading-overlay').innerHTML = `
-                <div style="text-align:center;">
-                    <p style="color:red;">Verbindungsproblem mit Firebase</p>
-                    <button onclick="window.location.reload()" class="btn btn-primary">
-                        Seite neu laden
-                    </button>
-                </div>
-            `;
-        }, 10000);
-
-            // Auth-State Observer mit Error-Handling
-            auth.onAuthStateChanged(user => {
-                clearTimeout(authTimeout); // Timeout löschen
-                document.getElementById('loading-overlay').style.display = 'none';
-            
-                if (user) {
-                    console.log('User angemeldet:', user.email);
-                    loadUserData(user).then(showAppContent);
-                } else {
-                    console.log('Kein User angemeldet');
-                    showLoginScreen();
-                }
-            }).catch(error => {
-                console.error('Auth Observer Fehler:', error);
-                document.getElementById('loading-overlay').innerHTML = `
-                    <div style="text-align:center;">
-                        <p style="color:red;">Authentifizierungsfehler</p>
-                        <p>${error.message}</p>
-                        <button onclick="window.location.reload()" class="btn btn-primary">
-                            Neu versuchen
-                        </button>
-                    </div>
-                `;
-            });
-            
-            // Event Listener
-            loginBtn.addEventListener('click', () => {
-                if (checkAuthInitialization()) {
-                    login();
-                }
-            });
-            
-            registerBtn.addEventListener('click', () => {
-                if (checkAuthInitialization()) {
-                    register();
-                }
-            });
-            
-            // Formularverarbeitung
-            document.getElementById('offer-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                saveOffer();
-            });
-        });
-
-        function loadUserData(user) {
-    return db.collection('artifacts/verkaufssoftware/users').doc(user.uid).get()
-        .then(doc => {
-            if (!doc.exists) {
-                console.warn("Keine Benutzerdaten gefunden - erstelle Standarddaten");
-                return db.collection('artifacts/verkaufssoftware/users').doc(user.uid).set({
-                    name: user.email.split('@')[0], // Fallback: Nutze E-Mail-Prefix als Namen
-                    email: user.email,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            }
-            return doc.data();
-        })
-        .then(userData => {
-            // Fallback: Wenn kein Name existiert, nutze den E-Mail-Prefix
-            const userName = userData?.name || user.email.split('@')[0];
-            document.getElementById('user-email').textContent = user.email;
-            document.getElementById('personal-welcome').textContent = `Hallo ${userName}, willkommen zurück!`;
-            document.getElementById('user-avatar').textContent = userName.charAt(0).toUpperCase();
-            return userData;
-        })
-        .catch(error => {
-            console.error('Fehler beim Laden der Benutzerdaten:', error);
-            // Fallback: Zeige mindestens die E-Mail an
-            document.getElementById('user-email').textContent = user.email;
-            document.getElementById('personal-welcome').textContent = `Hallo ${user.email.split('@')[0]}, willkommen zurück!`;
-            document.getElementById('user-avatar').textContent = user.email.charAt(0).toUpperCase();
-            return null;
-        });
-}
-
-        function showAppContent() {
-            loginContainer.style.display = 'none';
-            appContent.style.display = 'block';
-            loadRecentActivities();
-            loadOffers();
-        }
-
-        function showLoginScreen() {
-            loginContainer.style.display = 'flex';
-            appContent.style.display = 'none';
-            showLoginForm();
-        }
-
-        function showLoginForm() {
-            loginForm.style.display = 'block';
-            registerForm.style.display = 'none';
-            loginAlert.style.display = 'none';
-        }
-
-        function showRegisterForm() {
-            loginForm.style.display = 'none';
-            registerForm.style.display = 'block';
-            loginAlert.style.display = 'none';
-        }
-
-        function login() {
-            if (!checkAuthInitialization()) return;
-        
-            const email = document.getElementById('login-email').value.trim();
-            const password = document.getElementById('login-password').value.trim();
-        
-            if (!email || !password) {
-                showAlert(loginAlert, 'Bitte geben Sie E-Mail und Passwort ein!', 'error');
-                return;
-            }
-        
-            showAlert(loginAlert, 'Anmeldung läuft...', 'success');
-        
-            // Timeout für Login-Vorgang
-            const loginTimeout = setTimeout(() => {
-                showAlert(loginAlert, 'Timeout: Server antwortet nicht', 'error');
-            }, 10000);
-        
-            auth.signInWithEmailAndPassword(email, password)
-                .then(() => {
-                    clearTimeout(loginTimeout);
-                    showAlert(loginAlert, 'Anmeldung erfolgreich!', 'success');
-                })
-                .catch((error) => {
-                    clearTimeout(loginTimeout);
-                    showAlert(loginAlert, getAuthErrorMessage(error), 'error');
-                });
-        }
-        
-        function register() {
-            if (!checkAuthInitialization()) return;
-        
-            const name = document.getElementById('register-name').value.trim();
-            const email = document.getElementById('register-email').value.trim();
-            const password = document.getElementById('register-password').value.trim();
-            const confirm = document.getElementById('register-confirm').value.trim();
-        
-            if (!name || !email || !password || !confirm) {
-                showAlert(loginAlert, 'Bitte füllen Sie alle Felder aus!', 'error');
-                return;
-            }
-        
-            if (password !== confirm) {
-                showAlert(loginAlert, 'Passwörter stimmen nicht überein!', 'error');
-                return;
-            }
-        
-            if (password.length < 6) {
-                showAlert(loginAlert, 'Passwort muss mindestens 6 Zeichen lang sein!', 'error');
-                return;
-            }
-        
-            showAlert(loginAlert, 'Registrierung läuft...', 'success');
-        
-            // Timeout für Registrierungsvorgang
-            const registerTimeout = setTimeout(() => {
-                showAlert(loginAlert, 'Timeout: Server antwortet nicht', 'error');
-            }, 15000);
-        
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    clearTimeout(registerTimeout);
-                    return db.collection('artifacts/verkaufssoftware/users').doc(userCredential.user.uid).set({
-                        name: name,
-                        email: email,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                })
-                .then(() => {
-                    showAlert(loginAlert, 'Registrierung erfolgreich! Sie werden angemeldet...', 'success');
-                    return auth.signInWithEmailAndPassword(email, password);
-                })
-                .catch((error) => {
-                    clearTimeout(registerTimeout);
-                    showAlert(loginAlert, getAuthErrorMessage(error), 'error');
+                    langSettingsContainer.appendChild(settingOption);
                     
-                    // Falls der User erstellt wurde aber die Daten nicht gespeichert werden konnten
-                    if (error.code === 'auth/email-already-in-use') {
-                        auth.signInWithEmailAndPassword(email, password)
-                            .catch(e => console.error("Automatische Anmeldung fehlgeschlagen:", e));
+                    // Fülle die Stimmen-Dropdown-Liste
+                    const voiceSelect = document.getElementById(selectId);
+                    const filteredVoices = availableVoices.filter(v => v.lang.startsWith(lang.langCode));
+                    
+                    if (filteredVoices.length > 0) {
+                        filteredVoices.forEach(voice => {
+                            const option = document.createElement('option');
+                            option.textContent = `${voice.name} (${voice.lang}) ${voice.default ? ' — Standard' : ''}`;
+                            option.value = voice.name;
+                            voiceSelect.appendChild(option);
+                        });
+                        
+                        if (userSettings.voices[langKey] && availableVoiceNames.includes(userSettings.voices[langKey])) {
+                            voiceSelect.value = userSettings.voices[langKey];
+                        } else {
+                            userSettings.voices[langKey] = voiceSelect.value;
+                        }
+                    } else {
+                        const option = document.createElement('option');
+                        option.textContent = 'Keine Stimmen verfügbar';
+                        voiceSelect.appendChild(option);
+                        userSettings.voices[langKey] = null;
                     }
                 });
-        }
-        
-                function logout() {
-                    auth.signOut().catch(error => {
-                        console.error('Abmeldefehler:', error);
-                    });
-                }
-        
-                function loadOffers() {
-                    const tbody = document.querySelector('#offers-table tbody');
-                    tbody.innerHTML = '';
-        
-                    db.collection('artifacts/verkaufssoftware/public/data')
-                        .orderBy('createdAt', 'desc')
-                        .get()
-                        .then(querySnapshot => {
-                            querySnapshot.forEach(doc => {
-                                const offer = doc.data();
-                                const row = document.createElement('tr');
-                                row.innerHTML = `
-                                    <td>${offer.name}</td>
-                                    <td>${offer.description}</td>
-                                    <td>${offer.seasons.join(', ')}</td>
-                                    <td>${offer.createdAt?.toDate().toLocaleString() || ''}</td>
-                                `;
-                                row.addEventListener('click', () => showOfferDetails(offer));
-                                tbody.appendChild(row);
-                            });
-                        })
-                        .catch(error => {
-                            console.error('Fehler beim Laden der Angebote:', error);
-                        });
-                }
+            }
 
-        function loadRecentActivities() {
-            const activitiesDiv = document.getElementById('recent-activities');
-            
-            db.collection('artifacts/verkaufssoftware/public/data')
-                .orderBy('createdAt', 'desc')
-                .limit(3)
-                .get()
-                .then(querySnapshot => {
-                    let html = '<ul style="list-style-type:none;padding:0;">';
-                    querySnapshot.forEach(doc => {
-                        const offer = doc.data();
-                        html += `
-                            <li style="padding:8px 0;border-bottom:1px solid #eee;">
-                                <strong>${offer.name}</strong><br>
-                                <small>${offer.createdAt?.toDate().toLocaleString() || ''}</small>
-                            </li>
-                        `;
-                    });
-                    html += '</ul>';
-                    activitiesDiv.innerHTML = html;
-                })
-                .catch(error => {
-                    activitiesDiv.innerHTML = 'Fehler beim Laden der Aktivitäten';
-                    console.error('Fehler beim Laden der Aktivitäten:', error);
+            // Funktion zum Speichern der Einstellungen
+            saveSettingsButton.addEventListener('click', () => {
+                userSettings.languages = [];
+                Object.keys(languageData).forEach(langKey => {
+                    const checkbox = document.getElementById(`lang-checkbox-${langKey}`);
+                    const select = document.getElementById(`voice-select-${langKey}`);
+
+                    if (checkbox.checked) {
+                        userSettings.languages.push(langKey);
+                        userSettings.voices[langKey] = select.value;
+                    } else {
+                        userSettings.voices[langKey] = null;
+                    }
                 });
-        }
-
-        function showOfferDetails(offer) {
-            const detailsDiv = document.getElementById('offer-details');
-            detailsDiv.innerHTML = `
-                <h4>${offer.name}</h4>
-                <p><strong>Ferien:</strong> ${offer.seasons.join(', ')}</p>
-                <p><strong>Erstellt am:</strong> ${offer.createdAt?.toDate().toLocaleString() || ''}</p>
-                <h5>Anleitung:</h5>
-                <pre style="white-space:pre-wrap;background:#f5f5f5;padding:10px;border-radius:4px;">${offer.guide}</pre>
-            `;
-        }
-
-        function filterOffers() {
-            const filterValue = document.getElementById('filter-season').value;
-            const rows = document.querySelectorAll('#offers-table tbody tr');
-            
-            rows.forEach(row => {
-                const seasons = row.cells[2].textContent.split(', ');
-                const showRow = !filterValue || 
-                               filterValue === 'Alle' && seasons.includes('Alle') ||
-                               seasons.includes(filterValue) || 
-                               seasons.includes('Alle');
-                row.style.display = showRow ? '' : 'none';
+                settingsModal.classList.remove('show');
             });
-        }
 
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(section => {
-                section.style.display = 'none';
-            });
-            document.getElementById(`${sectionId}-section`).style.display = 'block';
-            
-            document.querySelectorAll('.sidebar-menu li').forEach(item => {
-                item.classList.remove('active');
-            });
-            document.querySelector(`.sidebar-menu li[onclick="showSection('${sectionId}')"]`).classList.add('active');
-        }
+            // Funktion zur Sprachausgabe
+            function speakNumber(number) {
+                if (userSettings.languages.length === 0) {
+                    alert('Bitte wählen Sie in den Einstellungen mindestens eine Sprache aus.');
+                    return;
+                }
+                if (availableVoices.length === 0) {
+                    alert('Die Stimmen werden noch geladen. Bitte warten Sie einen Moment.');
+                    return;
+                }
 
-        function toggleOptions() {
-            document.getElementById('options-container').classList.toggle('show');
-        }
-
-        function selectAllSeasons(checkbox) {
-            const options = document.querySelectorAll('#options-container input[type="checkbox"]:not([value="Alle"])');
-            options.forEach(opt => {
-                opt.checked = checkbox.checked;
-            });
-            updateSelectedTags();
-        }
-
-        function updateSelectedTags() {
-            const selected = document.querySelectorAll('#options-container input[type="checkbox"]:checked:not([value="Alle"])');
-            const tagsContainer = document.getElementById('selected-tags');
-            tagsContainer.innerHTML = '';
-            
-            if (selected.length === 0) {
-                tagsContainer.innerHTML = '<span style="color:#777">Wählen Sie Ferien aus...</span>';
-                return;
+                let speakingIndex = 0;
+                
+                function speakNext() {
+                    if (speakingIndex < userSettings.languages.length) {
+                        const langKey = userSettings.languages[speakingIndex];
+                        const data = languageData[langKey];
+                        const numberName = numberData[number][langKey];
+                        
+                        const utterance = new SpeechSynthesisUtterance(`${data.prefix} ${numberName}`);
+                        
+                        const voice = availableVoices.find(v => v.name === userSettings.voices[langKey]);
+                        if (voice) {
+                            utterance.voice = voice;
+                        }
+                        
+                        utterance.onend = () => {
+                            speakingIndex++;
+                            speakNext();
+                        };
+                        
+                        window.speechSynthesis.speak(utterance);
+                    }
+                }
+                
+                window.speechSynthesis.cancel();
+                speakNext();
             }
             
-            selected.forEach(checkbox => {
-                const tag = document.createElement('div');
-                tag.className = 'selected-tag';
-                tag.innerHTML = `
-                    ${checkbox.value}
-                    <button type="button" onclick="unselectSeason('${checkbox.value}')">&times;</button>
-                `;
-                tagsContainer.appendChild(tag);
-            });
-        }
-
-        function unselectSeason(value) {
-            const checkbox = document.querySelector(`#options-container input[value="${value}"]`);
-            if (checkbox) {
-                checkbox.checked = false;
-                updateSelectedTags();
+            // Erstellen der 75 Buttons
+            for (let i = 1; i <= 75; i++) {
+                const button = document.createElement('button');
+                button.classList.add('number-button');
+                button.textContent = i;
+                button.onclick = () => speakNumber(i);
+                container.appendChild(button);
             }
-            event.stopPropagation();
-        }
-
-        function showAlert(element, message, type) {
-            element.textContent = message;
-            element.className = `alert alert-${type}`;
-            element.style.display = 'block';
-            
-            setTimeout(() => {
-                element.style.display = 'none';
-            }, 5000);
-        }
-
-        function getAuthErrorMessage(error) {
-            switch (error.code) {
-                case 'auth/email-already-in-use':
-                    return 'Diese E-Mail ist bereits registriert.';
-                case 'auth/invalid-email':
-                    return 'Ungültige E-Mail-Adresse.';
-                case 'auth/weak-password':
-                    return 'Passwort ist zu schwach (mindestens 6 Zeichen).';
-                case 'auth/user-not-found':
-                    return 'Benutzer nicht gefunden.';
-                case 'auth/wrong-password':
-                    return 'Falsches Passwort.';
-                default:
-                    return error.message || 'Ein Fehler ist aufgetreten.';
-            }
-        }
+        });
     </script>
+
 </body>
 </html>
